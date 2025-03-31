@@ -18,7 +18,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "deploy": "npm run build && rmdir /s /q ..\\docs 2>nul & mkdir ..\\docs & move build\\* ..\\docs\\"
+    "predeploy": "npm run build",
+    "deploy": "npm run build && rmdir /s /q ../docs && move build ../docs && git add ../docs && git commit -m 'Deploy to GitHub Pages' && git push"
   },
   "eslintConfig": {
     "extends": [
