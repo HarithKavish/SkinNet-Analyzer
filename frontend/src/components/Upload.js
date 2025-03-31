@@ -127,9 +127,13 @@ function Upload() {
 
   const checkBackendStatus = async () => {
     try {
-      await axios.get(`${BASE_URL}/api/status`);
+      await axios.get(`${BASE_URL}/api/status`, {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true, // Try this if CORS is strict
+      });
       setBackendStatus("Server Status: Online ✅");
     } catch (error) {
+      console.error("Error connecting to backend:", error);
       setBackendStatus("Server Status: Offline ❌");
     }
   };
