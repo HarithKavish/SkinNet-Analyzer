@@ -120,7 +120,7 @@ def get_disease_info():
     return jsonify(ai_results)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)  # Use the PORT from render.yaml
+    app.run(host="0.0.0.0", port=10000)  # Use the PORT from render.yaml
 
 
 # "Cellulitis", "Impetigo", "Ringworm", "Cutaneous-larva-migrans", "Chickenpox", "Shingles"
