@@ -132,6 +132,7 @@ function Upload() {
       
       if (response.data.status === "online") {
         setBackendStatus("Server Status: Online ✅");
+        console.log(response.data.status);
       } else {
         setBackendStatus("Server Status: Unknown Status ❓");
       }
