@@ -36,7 +36,8 @@ from out_of_class import detect_unknown_disease
 from py_ai import py_ai_main
 
 app = Flask(__name__)
-CORS(app)  # Allow frontend to communicate with backend
+# Allow all domains (or specify your frontend URL)
+CORS(app, origins=["https://harithkavish.github.io"], supports_credentials=True)
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure upload directory exists
