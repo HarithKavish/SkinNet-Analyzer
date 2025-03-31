@@ -1,0 +1,375 @@
+/* .hee
+  {
+    margin-left: 500px;
+    margin-top:40px;
+  }
+  .pic
+  {
+    margin-left: 200px;
+    margin-top:60px;
+  }
+  .pict
+  {
+    font-size: 20px;
+    margin-left:170px;
+  }
+  .pp{
+    margin-left: -970px;
+    font-size: 18px;
+    text-align:center
+  }
+  .send{
+    margin-left:700px;
+    margin-top:-370px;
+  }
+  .heee
+  {
+    margin-left: 680px;
+    margin-top:16px;
+    font-size: 20px;
+  }
+  .pr{
+    margin-left:-15px;
+    font-size:18px;
+    text-align: center;
+  }
+  .ree
+  {
+    margin-left:1200px;
+    margin-top:-340px
+  }
+  .r1
+  {
+    font-size:20px;
+    margin-top: 20px;
+    margin-left:1200px;
+  }
+  .p3{
+    font-size:18px;
+    margin-top: 24px;
+    margin-left:1100px;
+  }
+  .p4
+  {
+    margin-left:1200px;
+    font-size: 18px;
+  }
+  .inst{
+    margin-left:60px;
+    margin-top:100px;
+    font-size:16px;
+  }
+  .ins{
+    margin-left:60px;
+    margin-top:10px;
+    font-size:16px;
+  }
+.but{
+    margin-left: -190px;
+    margin-top: -30px;
+    margin-bottom: 10px;
+}
+.preview-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .preview-image {
+    width: 100%;
+    max-width: 250px;
+    border-radius: 10px;
+    margin-top: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+   */
+
+
+  .main{
+    width: 100%;
+    height: 100%;
+    margin-top: 20px;
+    /* text-align: center; */
+    /* place-items: center; */
+    /* margin: 0; */
+  }
+  .title-divv{
+    width: 100%;
+    margin-top: 0;
+    /* border-top-left-radius: 10px; */
+    /* border-top-right-radius: 10px; */
+    /* background-color: rgb(52, 100, 163); */
+    /* color: aliceblue; */
+    font-family: 'Times New Roman', Times, serif;
+    /* padding-top: 0.5px; */
+    /* padding: 1px; */
+  }
+   .upload-container {
+    /* text-align: center; */
+    width: 50%;
+    margin: auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    /* display: grid; */
+    box-shadow: 0px 20px 20px rgba(0, 0, 0, 0.3);
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .upload-button {
+    background-color: #28a745;
+    padding: 10px;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .download-btn {
+    background-color: #ac5252;
+    padding: 10px;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+  }
+
+  #page-break {
+    page-break-before: always; /* Moves element to a new page */
+    break-before: page;
+}
+
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .upload-container {
+      width: 90%;
+    }
+  }
+  
+  .image-preview {
+    margin-top: 15px;
+    /* text-align: center; */
+  }
+  
+  .preview-img {
+    width: 200px;
+    height: auto;
+    border-radius: 10px;
+    margin-top: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+
+
+
+
+  .upload-input {
+    display: none; 
+  }
+  
+  .upload-label {
+    display: inline-block;
+    padding: 6px 14px;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    /* font-weight: bold; */
+    cursor: pointer;
+    /* transition: background 0.1s ease-in-out; */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .upload-label:hover {
+    background-color: #0056b3;
+    transform: translateY(-5px); /* Moves button up */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Adds shadow */
+  }
+  
+  .upload-label:active {
+    background-color: #004099;
+  }
+  
+  .upload-container {
+    /* text-align: center; */
+    
+  }
+  
+
+
+
+
+/* Location Input Container */
+.location-input {
+  display: flex;
+  align-items: center; /* Aligns items in a row */
+  gap: 10px; /* Space between title and input box */
+  margin: 20px 0;
+}
+
+/* Label Styling */
+#location-title {
+  /* font-size: 16px; */
+  /* font-weight: 600; */
+  color: #333;
+  white-space: nowrap; /* Prevents title from wrapping */
+}
+
+/* Input Field */
+#location-box {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+
+/* Input Field - Focus Effect */
+.location-input input:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 8px rgba(0, 91, 187, 0.5);
+}
+
+/* Placeholder Text */
+.location-input input::placeholder {
+  color: #888;
+  font-style: italic;
+}
+
+/* Responsive - Mobile Friendly */
+@media (max-width: 600px) {
+  .location-input input {
+    width: 90%;
+  }
+}
+
+
+
+
+
+
+
+
+
+/* Symptom Questions Container */
+.symptom-questions {
+  margin-top: 20px;
+}
+
+/* Question Text */
+.symptom-questions p {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+/* Button Container */
+.question {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+/* Yes/No Buttons */
+.question button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+}
+
+/* Yes Button Default */
+.question button:first-of-type {
+  background-color: #e6ffe6; /* Light green */
+  border-color: #ccc;
+}
+
+/* No Button Default */
+.question button:last-of-type {
+  background-color: #ffe6e6; /* Light red */
+  border-color: #ccc;
+}
+
+/* Highlight Selected Button */
+.question button.selected {
+  border-color: green;
+  box-shadow: 0 0 8px rgba(0, 128, 0, 0.6);
+}
+
+
+
+
+
+
+
+.hospital-list {
+  display: flex;
+  flex-wrap: wrap; /* Ensures cards wrap if screen is small */
+  gap: 15px; /* Adds spacing between cards */
+  /* justify-content: center;  */
+}
+
+.hospital-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 10px;
+  width: 27.3%;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.hospital-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hospital-card h3 {
+  margin-bottom: 5px;
+}
+
+.hospital-card p {
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.hospital-map {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white; /* Spinner color */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

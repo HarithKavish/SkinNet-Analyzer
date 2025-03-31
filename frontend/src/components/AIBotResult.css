@@ -1,0 +1,17 @@
+.chatbot-container {
+    text-align: center;
+    width: 50%;
+    margin: auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .chatbot-container {
+      width: 90%;
+    }
+  }
+  

@@ -1,0 +1,39 @@
+.formm-container {
+    margin-top:-120px;
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+  }
+  
+  .kk {
+    text-align: center;
+  }
+  
+  .question {
+    margin-bottom: 15px;
+  }
+  
+  .options {
+    display: flex;
+    gap: 10px;
+  }
+  
+  b22 {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  b22:hover {
+    background-color: #0056b3;
+  }
+  

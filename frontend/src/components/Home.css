@@ -1,0 +1,310 @@
+/* Flex container */
+.main{
+  width: 100%;
+  height: 100%;
+  margin-top: 20px;
+}
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 auto;
+  height: 20px;
+}
+.bbox{
+  width: 75%;
+  height: max-content;
+  margin-top: 20px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: auto;
+  padding: 20px;
+  background: linear-gradient(144deg, rgba(45,213,250,1) 0%, rgba(10,86,161,1) 100%);
+}
+.bbox-1{
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap; /* Allows items to move to the next line if needed */
+  justify-content: space-between; 
+  gap: 10px;
+}
+.bbox-1 div{
+  flex: 1;
+  /* float: left; */
+  /* width: fit-content; */
+  /* text-align: center; */
+  place-items: center;
+}
+
+.bbox-1 div img{
+  max-width: 350px;
+  height: auto;
+  /* margin-left: 60%; */
+  /* margin-top:-370px; */
+}
+
+.t1
+{
+  /* margin-top:-200px; */
+  font-size: 35px;
+  /* margin-left: 350px; */
+  font-family: 'Times New Roman', Times, serif;
+}
+.p11{
+  font-size: 20px;
+  font-family:'Times New Roman', Times, serif;
+}
+
+.gradient-button {
+  /* margin-left:350px; */
+  /* margin-top:15px; */
+  font-family: 'Times New Roman', Times, serif;
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0px 4px 15px rgba(255, 65, 108, 0.4);
+}
+
+/* Hover Effect */
+.gradient-button:hover {
+  background: linear-gradient(135deg, #ff4b2b, #ff416c);
+  transform: scale(1.05);
+  box-shadow: 0px 6px 20px rgba(255, 65, 108, 0.6);
+}
+
+/* Active Effect */
+.gradient-button:active {
+  transform: scale(0.95);
+}
+
+/* Glowing Effect */
+.gradient-button::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.gradient-button:hover::after {
+  opacity: 1;
+}
+.p12{
+  /* margin-top: 115px; */
+  /* margin-left: -540px; */
+  font-family:'Times New Roman', Times, serif;
+  font-size: 15px;
+}
+
+
+
+
+.fungal-infections{
+  width: min-content;
+  margin-top:120px;
+}
+.bacterial-infections{
+  width: min-content;
+  margin-top:120px;
+}
+.viral-infections{
+  width: min-content;
+  margin-top:120px;
+}
+.parasitic-infection{
+  width: min-content;
+  margin-top:120px;
+  /* margin-bottom: 10px; */
+}
+
+
+
+.abc{
+ text-align: center;
+ margin-top: 40px;
+ font-family: 'Times New Roman', Times, serif;
+}
+.pa{
+  font-family: 'Times New Roman', Times, serif;
+  font-size:18px;
+  text-align: center;
+}
+.spa{
+  text-align: center;
+}
+.pk{
+  margin-left:10px;
+  /* margin-top:190px; */
+  font-size: 17px;
+  font-family: 'Times New Roman', Times, serif;
+}
+.ste{
+  font-size: 17px;
+  font-family:'Times New Roman', Times, serif;
+  text-align: center;
+  justify-content:center;
+  /* margin-left:57px; */
+  /* margin-top:100px; */
+}
+.ert {
+  font-family: 'Times New Roman', Times, serif;
+  font-size:17px;
+  text-align: center;
+  margin-left:0px;
+}
+/* card */
+/* From Uiverse.io by suleymanlaarabidev */ 
+.infections{
+  /* place-items: center; */
+  width: max-content;
+  margin: auto;
+  border: 2px solid gray;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3); /* Shadow effect */
+  padding: 30px;
+  margin-bottom: 20px;
+}
+.first-content {
+  height: 100%;
+  width: 100%;
+  font-size: 20px;
+  font-family: 'Times New Roman', Times, serif;
+  transition: all 0.4s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  border-radius: 15px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Center the content inside the card properly */
+.second-content {
+  height: 100%;
+  width: 100%;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+  transition: all 0.4s ease-in-out;
+  font-size: 0px;
+  color: aliceblue;
+  transform: rotate(90deg) scale(-1);
+  position: absolute;
+  text-align: center;
+  top: 0;
+  left: 0;
+}
+
+/* Common Card Styles */
+.card1, .card2, .card3 {
+  width: 190px;
+  height: 254px;
+  background: rgb(34, 161, 229);
+  transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.705);
+  font-size: 30px;
+  font-weight: 900;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Adjusting positions */
+.card1 { margin-left: 250px; margin-top: -150px; }
+.card2 { margin-left: 505px; margin-top: -256px; }
+.card3 { margin-left: 750px; margin-top: -256px; }
+
+/* Hover Effects */
+.card1:hover, .card2:hover, .card3:hover {
+  border-radius: 15px;
+  cursor: pointer;
+  transform: scale(1.2);
+  box-shadow: 0px 0px 15px 7px rgba(0, 0, 0, 0.8);
+  background: rgb(2, 52, 159);
+}
+
+/* Hide first-content on hover */
+.card1:hover .first-content,
+.card2:hover .first-content,
+.card3:hover .first-content {
+  height: 0px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Show second-content properly centered */
+.card1:hover .second-content,
+.card2:hover .second-content,
+.card3:hover .second-content {
+  opacity: 1;
+  font-size: 1.8rem;
+  transform: rotate(0deg);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* .home-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.home-title {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.home-button {
+  padding: 12px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.home-button:hover {
+  background-color: #0056b3;
+} */
+
+/* Responsive */
+/* @media (max-width: 600px) {
+  .home-title {
+    font-size: 22px;
+  }
+} */

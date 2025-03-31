@@ -1,0 +1,150 @@
+.about-container {
+    width: 50%;
+    min-width: min-content;
+    margin: auto;
+    padding: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 20px 20px rgba(0, 0, 0, 0.3);
+    /* display: grid; */
+    place-items: center;
+    /* text-align: center; */
+}
+.title-div{
+    width: 100%;
+    margin-top: 0;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    background-color: rgb(52, 100, 163);
+    /* padding: 5px; */
+}
+#title-text{
+    text-align: center;
+    width: 100%;
+    color: aliceblue;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+#h1 {
+    font-family: 'Times New Roman', Times, serif;
+    text-align: center;
+}
+
+#p {
+    text-align: center;
+}
+
+#h2 {
+    text-align: center;
+    margin-top: 50px; /* 50px / 1080px */
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.sna-div{
+    width: max-content;
+
+}
+.sh1{
+    width: max-content;
+    display: grid;
+    grid-auto-flow: column; /* Arrange elements in a row */
+    margin-bottom: 20px;
+}
+
+.sh1-image{
+    width: max-content;
+    display: grid;
+    grid-auto-flow: row; /* Arrange elements in a row */
+    align-items: center; /* Align items vertically */
+}
+
+.sh1-image2{
+    width: max-content;
+    display: grid;
+    grid-auto-flow: column; /* Arrange elements in a row */
+    align-items: center; /* Align items vertically */
+}
+
+.sh1-content{
+    width: max-content;
+}
+
+.hehe {
+    width: 100%;
+    color: black;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.sa {
+    width: 50%;
+}
+
+.arr {
+    width: 50%;
+}
+
+.circle-l {
+    width: 350px;
+    height: 350px;
+    background: linear-gradient(to right, #6cb3ff, #004080);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0.37vw 0.74vw rgba(0, 0, 0, 0.6); /* Scaled */
+}
+
+.sh2{
+    width: max-content;
+    display: grid;
+    grid-auto-flow: column; /* Arrange elements in a row */
+    margin-bottom: 20px;
+}
+
+.sh2-image{
+    width: 50%;
+    display: grid;
+    grid-auto-flow: row; /* Arrange elements in a row */
+    align-items: center; /* Align items vertically */
+}
+
+.sh2-image2{
+    width: max-content;
+    display: grid;
+    grid-auto-flow: column; /* Arrange elements in a row */
+    align-items: center; /* Align items vertically */
+}
+
+.sh2-content{
+    width: 50%;
+}
+
+.circle-r {
+    width: 350px; /* Adjust size as needed */
+    height: 350px; 
+    background: linear-gradient(to right, #6cb3ff, #004080); /* Light to dark blue gradient */
+    border-radius: 50%; /* Makes it a perfect circle */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0.37vw 0.74vw rgba(0, 0, 0, 0.4); /* Scaled */
+}
+
+.para
+{
+    max-width: 100%;
+    font-size: 18px;
+    text-align:center;
+    color:aliceblue;
+}
+
+.ul {
+    margin-top: -26.85vh; /* -290px / 1080px */
+    margin-left: 0.89%; /* 17px / 1920px */
+}
+
+.jee {
+    font-family: 'Times New Roman', Times, serif;
+}
