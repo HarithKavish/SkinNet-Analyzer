@@ -125,32 +125,21 @@ function Upload() {
     setTimeout(() => setIsOutputReady(true), 2000); // Adjust based on real output loading time
   }, []);
 
+  // Function to check the backend status
   const checkBackendStatus = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/status`, {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true, 
-      });
-  
-      console.log("Backend Response:", response.data);
-  
+      const response = await axios.get(`${BASE_URL}/api/status`);
+      
       if (response.data.status === "online") {
         setBackendStatus("Server Status: Online ✅");
       } else {
-        setBackendStatus("Server Status: Offline ❌");
+        setBackendStatus("Server Status: Unknown Status ❓");
       }
     } catch (error) {
       console.error("Error connecting to backend:", error);
-      
-      if (error.response) {
-        // If the error has a response from the server (e.g., 404, 500)
-        console.error("Server responded with:", error.response.status);
-      }
-      
       setBackendStatus("Server Status: Offline ❌");
     }
   };
-  
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
