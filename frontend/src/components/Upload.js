@@ -126,7 +126,7 @@ function Upload() {
 
   const checkBackendStatus = async () => {
     try {
-      await axios.get("http://localhost:5000/api/status");
+      await axios.get("https://project-college-3rdyr-final-year-project.onrender.com/api/status");
       setBackendStatus("Server Status: Online ✅");
     } catch (error) {
       setBackendStatus("Server Status: Offline ❌");
@@ -157,7 +157,7 @@ function Upload() {
     formData.append("file", file);
   
     try {
-      const response = await axios.post("http://localhost:5000/api/upload", formData, {
+      const response = await axios.post("https://project-college-3rdyr-final-year-project.onrender.com/api/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
   
@@ -200,7 +200,7 @@ function Upload() {
     setIsSubmitting(true); // Show loading icon
   
     try {
-      const response = await axios.post("http://localhost:5000/api/confirm_symptoms", { answers });  
+      const response = await axios.post("https://project-college-3rdyr-final-year-project.onrender.com/api/confirm_symptoms", { answers });  
       fetchFullDiseaseInfo(response.data.disease, response.data.severity);
     } catch (error) {
       console.error("Error confirming symptoms:", error);
@@ -214,7 +214,7 @@ function Upload() {
     try {
       console.log(`Sending request for Disease: ${disease}, Severity: ${severity}, Location: ${location}`);
   
-      const response = await axios.post("http://localhost:5000/api/get_disease_info", {
+      const response = await axios.post("https://project-college-3rdyr-final-year-project.onrender.com/api/get_disease_info", {
         disease,
         severity,
         location,
