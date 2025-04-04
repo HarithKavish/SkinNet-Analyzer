@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/SkinNet-Analyzer/static/css/main.462be920.css",
-    "main.js": "/SkinNet-Analyzer/static/js/main.3b8e01bc.js",
+    "main.js": "/SkinNet-Analyzer/static/js/main.a8b9ca8d.js",
     "static/js/549.2506b255.chunk.js": "/SkinNet-Analyzer/static/js/549.2506b255.chunk.js",
     "static/js/984.1d0c7dd3.chunk.js": "/SkinNet-Analyzer/static/js/984.1d0c7dd3.chunk.js",
     "static/js/488.e7fe8faf.chunk.js": "/SkinNet-Analyzer/static/js/488.e7fe8faf.chunk.js",
@@ -22,12 +22,12 @@
     "static/media/fa-v4compatibility.woff2": "/SkinNet-Analyzer/static/media/fa-v4compatibility.ea8f94e1d22e0d35ccd4.woff2",
     "index.html": "/SkinNet-Analyzer/index.html",
     "main.462be920.css.map": "/SkinNet-Analyzer/static/css/main.462be920.css.map",
-    "main.3b8e01bc.js.map": "/SkinNet-Analyzer/static/js/main.3b8e01bc.js.map",
+    "main.a8b9ca8d.js.map": "/SkinNet-Analyzer/static/js/main.a8b9ca8d.js.map",
     "984.1d0c7dd3.chunk.js.map": "/SkinNet-Analyzer/static/js/984.1d0c7dd3.chunk.js.map",
     "488.e7fe8faf.chunk.js.map": "/SkinNet-Analyzer/static/js/488.e7fe8faf.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.462be920.css",
-    "static/js/main.3b8e01bc.js"
+    "static/js/main.a8b9ca8d.js"
   ]
 }

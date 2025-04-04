@@ -113,6 +113,7 @@ function Upload() {
   const [isOutputReady, setIsOutputReady] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); // Tracks button loading state
   const outputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false); // Tracks Submit button loading state
   const BASE_URL = "https://project-college-3rdyr-final-year-project.onrender.com";
 
 
@@ -153,15 +154,17 @@ function Upload() {
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Please upload an image."); // Alert directly
+      alert("Please upload an image.");
       return;
     }
   
     if (!location.trim()) {
-      alert("Please enter your location."); // Alert directly
+      alert("Please enter your location.");
       return;
     }
-    
+  
+    setIsUploading(true); // Start loading animation
+  
     const formData = new FormData();
     formData.append("file", file);
   
@@ -176,11 +179,12 @@ function Upload() {
         setAnswers({}); // Reset answers
       } else {
         setResult(`Disease: ${response.data.disease}, Severity: ${response.data.severity}`);
-        alert(`Disease: ${response.data.disease}, Severity: ${response.data.severity}`); // Show alert for the result
       }
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert("Error processing image."); // Alert on error
+      alert("Error processing image.");
+    } finally {
+      setIsUploading(false); // Stop loading animation
     }
   };
   
@@ -313,7 +317,13 @@ function Upload() {
           </div>
   
           {!awaitingSymptoms ? (
-            <button className="upload-button" onClick={handleUpload}>Submit</button>
+              <button className="upload-button" onClick={handleUpload} disabled={isUploading}>
+              {isUploading ? (
+                <span className="loading-spinner"></span> // Show loading animation
+              ) : (
+                "Submit"
+              )}
+            </button>
           ) : (
             <div className="symptom-questions">
               <h2>Answer the following questions:</h2>
