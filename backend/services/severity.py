@@ -1,7 +1,6 @@
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-import requests
 from io import BytesIO
 
 # Load pre-trained EfficientNet model for severity estimation
@@ -10,8 +9,6 @@ severity_model.eval()
 
 # Preprocess image
 def preprocess_for_severity(image_url):
-    # response = requests.get(image_url)
-    # image = Image.open(BytesIO(response.content)).convert("RGB")
     image = Image.open(BytesIO(image_url)).convert("RGB")
     
     transform = transforms.Compose([

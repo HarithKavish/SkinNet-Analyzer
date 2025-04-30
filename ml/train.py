@@ -3,7 +3,7 @@ import torchvision.models as models
 from torch.utils.data import DataLoader
 from torchvision import transforms, datasets
 
-# # Load Dataset
+# Load Dataset
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -14,11 +14,13 @@ train_dataset = datasets.ImageFolder(root="dataset/train_set", transform=transfo
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
 # Model Training Function
-def train_model(model, save_path):
+def train_model(model, save_path, is_regression=False):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    criterion = torch.nn.CrossEntropyLoss()
+    
+    # Choose loss function based on classification or regression
+    criterion = torch.nn.CrossEntropyLoss() if not is_regression else torch.nn.MSELoss()
 
     for epoch in range(10):
         model.train()
@@ -31,9 +33,11 @@ def train_model(model, save_path):
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        print(f"Epoch {epoch+1}, Loss: {total_loss:.4f}")
 
-    torch.save(model, save_path)
+        avg_loss = total_loss / len(train_loader)
+        print(f"Epoch {epoch+1}, Loss: {avg_loss:.4f}")
+
+    torch.save(model.state_dict(), save_path)  # Save state_dict instead of the full model
 
 # Train EfficientNet
 efficientnet = models.efficientnet_b0(pretrained=True)
@@ -50,27 +54,8 @@ mobilenet = models.mobilenet_v3_small(pretrained=True)
 mobilenet.classifier[3] = torch.nn.Linear(mobilenet.classifier[3].in_features, 8)
 train_model(mobilenet, "models/mobilenet.pth")
 
-
-import torch
-import torchvision.models as models
-
-# Define models
-efficientnet = models.efficientnet_b0(pretrained=True)
-resnet = models.resnet18(pretrained=True)
-mobilenet = models.mobilenet_v2(pretrained=True)
-
-# Replace final layers for 8-class classification
-num_classes = 8
-efficientnet.classifier[1] = torch.nn.Linear(efficientnet.classifier[1].in_features, num_classes)
-resnet.fc = torch.nn.Linear(resnet.fc.in_features, num_classes)
-mobilenet.classifier[1] = torch.nn.Linear(mobilenet.classifier[1].in_features, num_classes)
-
-# Save models
-torch.save(efficientnet, "models/efficientnet.pth")
-torch.save(resnet, "models/resnet.pth")
-torch.save(mobilenet, "models/mobilenet.pth")
-
-# Severity model (Regression)
+# Severity Model (Regression)
 severity_model = models.efficientnet_b0(pretrained=True)
-severity_model.classifier[1] = torch.nn.Linear(severity_model.classifier[1].in_features, 1)
-torch.save(severity_model, "models/severity_model.pth")
+severity_model.classifier[1] = torch.nn.Linear(severity_model.classifier[1].in_features, 1)  # Regression output
+train_model(severity_model, "models/severity_model.pth", is_regression=True)
+

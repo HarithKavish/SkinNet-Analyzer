@@ -1,90 +1,3 @@
-# from flask import request, jsonify
-
-# SYMPTOM_MAPPING = {
-#     "Cellulitis": ["itching", "redness", "pain"],
-#     "Impetigo": ["itching", "blisters", "fluid discharge"],
-#     "Athlete-foot": ["itching", "skin peeling", "bad odor"],
-#     "Nail-fungus": ["thickened nails", "yellowish nails"],
-#     "Ringworm": ["itching", "red circular rash"],
-#     "Cutaneous-larva-migrans": ["skin rash", "worm-like tracks"],
-#     "Chickenpox": ["itching", "fever", "blisters"],
-#     "Shingles": ["pain", "blisters", "burning sensation"]
-# }
-
-# pending_symptom_check = {}  # Temporary storage for user symptom inputs
-
-# def confirm_disease_with_symptoms(top_3_predictions):
-#     """
-#     Sends symptom questions to the frontend for user input.
-#     """
-#     questions = []
-#     disease_keys = [disease for disease, _ in top_3_predictions]
-
-#     for disease in disease_keys:
-#         if disease in SYMPTOM_MAPPING:
-#             questions.extend([f"Do you have {symptom}?" for symptom in SYMPTOM_MAPPING[disease]])
-
-#     pending_symptom_check["diseases"] = disease_keys
-#     return questions
-
-# def process_user_responses(answers):
-#     """
-#     Processes user responses and confirms the disease.
-#     """
-#     symptom_scores = {disease: 0 for disease in pending_symptom_check["diseases"]}
-
-#     index = 0
-#     for disease in pending_symptom_check["diseases"]:
-#         if disease in SYMPTOM_MAPPING:
-#             for _ in SYMPTOM_MAPPING[disease]:
-#                 if answers.get(str(index)) == "1":  # "1" means user confirmed symptom
-#                     symptom_scores[disease] += 1
-#                 index += 1
-
-#     confirmed_disease = max(symptom_scores, key=symptom_scores.get)
-#     return confirmed_disease
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-from collections import Counter
 
 # Define symptom equivalences
 equivalent_symptoms = {
@@ -107,7 +20,7 @@ equivalent_symptoms = {
     "redness": ["redness", "red ring-shaped patch"],
     "thread/ring like pattern": ["red ring-shaped patch", "red lines on skin"],
     "skin texture changes": ["peeling skin", "scaly skin", "cracks"],
-    "nail changes": ["thickened nails", "discoloration", "brittle nails"],
+    "nail changes": ["thickened nails", "nail discoloration", "brittle nails"],
     "bad odor": ["bad odor"]
 }
 
@@ -126,7 +39,7 @@ SYMPTOM_MAPPING = {
     "Chickenpox": ["fever", "tiredness", "itching",   "fluid-filled blisters"],
     "Shingles": ["burning pain", "itching", "blisters",   "nerve pain"],
     "Athlete-foot": ["itching", "cracks", "burning", "peeling skin",   "blisters"],
-    "Nail-fungus": ["thickened nails", "discoloration", "brittle nails",   "bad odor"]
+    "Nail-fungus": ["thickened nails", "nail discoloration", "brittle nails",   "bad odor"]
 }
 
 # Normalize disease symptoms

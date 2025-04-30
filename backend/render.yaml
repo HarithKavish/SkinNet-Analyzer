@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: flask-backend
-    runtime: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn main:main"
-    envVars:
-      - key: PORT
-        value: 10000
