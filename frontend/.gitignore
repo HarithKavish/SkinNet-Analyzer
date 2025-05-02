@@ -6,9 +6,6 @@ __pycache__/
 dist/
 build/
 .eggs/
-.env
-.env.development
-.env.production
 **/.env*
 .venv
 venv/
