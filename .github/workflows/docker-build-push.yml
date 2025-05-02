@@ -97,16 +97,15 @@ jobs:
         run: |
           curl -fsSL https://railway.app/install.sh | sh
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
-        
-      - name: Railway Login
+      
+      - name: Link Railway Project
         run: |
-          railway login --token ${{ secrets.RAILWAY_TOKEN }}
+          railway link ${{ secrets.RAILWAY_PROJECT_ID }}
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        
+      
       - name: Deploy Backend Service to Railway
         run: |
-          railway init --project ${{ secrets.RAILWAY_PROJECT_ID }} --service backend
           railway variables set BACKEND_IMAGE_URL="harithkavish/skinnet-analyzer:${{ needs.build-backend.outputs.image_tag }}"
           railway deploy
         env:
