@@ -103,23 +103,26 @@ jobs:
           echo "Triggering deployment to Railway via API with environment variables..."
         
           curl -X POST "https://backboard.railway.app/v2/projects/${RAILWAY_PROJECT_ID}/deployments" \
-            -H "Authorization: Bearer ${RAILWAY_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "deploymentType": "IMAGE",
-              "image": "harithkavish/skinnet-analyzer:backend-latest",
-              "serviceName": "backend",
-              "envs": [
-                {
-                  "key": "ML_API_URL",
-                  "value": "'"${ML_API_URL}"'"
-                },
-                {
-                  "key": "GEMINI_API_KEY",
-                  "value": "'"${GEMINI_API_KEY}"'"
-                }
-              ]
-            }'
+          -H "Authorization: Bearer ${RAILWAY_TOKEN}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "deploymentType": "IMAGE",
+            "image": "harithkavish/skinnet-analyzer:backend-latest",
+            "serviceName": "backend",
+            "envs": [
+              {
+                "key": "ML_API_URL",
+                "value": "'"${ML_API_URL}"'"
+              },
+              {
+                "key": "GEMINI_API_KEY",
+                "value": "'"${GEMINI_API_KEY}"'"
+              }
+            ],
+            "meta": {
+              "forceDeploy": true
+            }
+          }'
 
   deploy-huggingface:
     needs: build-ml
