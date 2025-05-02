@@ -273,6 +273,7 @@ function Upload() {
   return (
     <div ref={outputRef} className="upload-container">
       <p className="backend-status">{backendStatus}</p>
+      <p>Disclaimer: This website is for Demonstration Purposes only. Don't use for Real Diagnosis</p>
 
       {backendStatus === "Checking Server Status..." ? null :
         backendStatus === "Server Status: Online ✅" ? (
