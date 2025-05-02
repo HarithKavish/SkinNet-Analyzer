@@ -16,14 +16,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 @app.get("/")
-def read_root():
-    return {"message": "SkinNet-Analyzer is up and running!"}
-
-@app.get("/health")
 async def health():
     return {"status": "ok"}
 
-@app.post("/predict")
+@app.post("/")
 async def predict(file: UploadFile = File(...)):
     try:
         logger.info(f"Received file with content type: {file.content_type}")

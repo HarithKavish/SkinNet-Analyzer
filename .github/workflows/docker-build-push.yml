@@ -87,19 +87,19 @@ jobs:
       needs.build-backend.result == 'success' ||
       needs.build-ml.result == 'success'
     steps:
-      - name: Restart Hugging Face Space
+      - name: Rebuild Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
         run: |
-          echo "Restarting Hugging Face Space: https://api.huggingface.co/spaces/$HF_SPACE_ID/restart"
+          echo "Rebuilding Hugging Face Space: https://api.huggingface.co/spaces/$HF_SPACE_ID/rebuild"
           ATTEMPTS=0
           MAX_ATTEMPTS=5
-          until curl -v -X POST "https://api.huggingface.co/spaces/$HF_SPACE_ID/restart" \
+          until curl -v -X POST "https://api.huggingface.co/spaces/$HF_SPACE_ID/rebuild" \
             -H "Authorization: Bearer $HF_TOKEN"; do
-             ATTEMPTS=$((ATTEMPTS+1))
+              ATTEMPTS=$((ATTEMPTS+1))
             if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]; then
-              echo "❌ Failed to restart Hugging Face Space after $MAX_ATTEMPTS attempts."
+              echo "❌ Failed to rebuild Hugging Face Space after $MAX_ATTEMPTS attempts."
               exit 1
             fi
             echo "🔄 Retrying in 5 seconds... (Attempt $ATTEMPTS)"
