@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # FULL history to allow correct diff
+          fetch-depth: 0
 
       - name: Set changed files
         id: set-vars
@@ -23,7 +23,6 @@ jobs:
           BACKEND_CHANGED=false
           ML_CHANGED=false
       
-          # Always check against previous commit
           if git diff --name-only HEAD~1 HEAD | grep '^backend/'; then
             BACKEND_CHANGED=true
           fi
@@ -39,6 +38,8 @@ jobs:
     needs: detect-changes
     runs-on: ubuntu-latest
     if: needs.detect-changes.outputs.backend_changed == 'true'
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -50,6 +51,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Backend Docker Image
+        id: build
         run: |
           IMAGE_NAME=harithkavish/skinnet-analyzer
           TAG=backend-latest
@@ -57,10 +59,14 @@ jobs:
           docker build -t $IMAGE_NAME:$TAG ./backend
           docker push $IMAGE_NAME:$TAG
 
+          echo "image_tag=$TAG" >> $GITHUB_OUTPUT
+
   build-ml:
     needs: detect-changes
     runs-on: ubuntu-latest
     if: needs.detect-changes.outputs.ml_changed == 'true'
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -72,6 +78,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push ML Docker Image
+        id: build
         run: |
           IMAGE_NAME=harithkavish/skinnet-analyzer
           TAG=ml-latest
@@ -79,12 +86,36 @@ jobs:
           docker build -t $IMAGE_NAME:$TAG ./ml
           docker push $IMAGE_NAME:$TAG
 
-  deploy-huggingface:
-    needs: [build-backend, build-ml]
+          echo "image_tag=$TAG" >> $GITHUB_OUTPUT
+
+  deploy-railway:
+    needs: build-backend
     runs-on: ubuntu-latest
-    if: |
-      needs.build-backend.result == 'success' ||
-      needs.build-ml.result == 'success'
+    if: needs.build-backend.result == 'success'
+    steps:
+      - name: Install Railway CLI
+        run: |
+          curl -fsSL https://railway.app/install.sh | sh
+          echo "$HOME/.railway/bin" >> $GITHUB_PATH
+        
+      - name: Railway Login
+        run: |
+          railway login --token ${{ secrets.RAILWAY_TOKEN }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        
+      - name: Deploy Backend Service to Railway
+        run: |
+          railway init --project ${{ secrets.RAILWAY_PROJECT_ID }} --service backend
+          railway variables set BACKEND_IMAGE_URL="harithkavish/skinnet-analyzer:${{ needs.build-backend.outputs.image_tag }}"
+          railway deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  deploy-huggingface:
+    needs: build-ml
+    runs-on: ubuntu-latest
+    if: needs.build-ml.result == 'success'
     steps:
       - name: Rebuild Hugging Face Space
         env:
@@ -104,40 +135,3 @@ jobs:
             echo "🔄 Retrying in 5 seconds... (Attempt $ATTEMPTS)"
             sleep 5
           done
-
-  deploy-railway:
-    needs: [build-backend, build-ml]
-    runs-on: ubuntu-latest
-    if: |
-      needs.build-backend.result == 'success' ||
-      needs.build-ml.result == 'success'
-    steps:
-      - name: Install Railway CLI
-        run: |
-          curl -fsSL https://railway.app/install.sh | sh
-          echo "$HOME/.railway/bin" >> $GITHUB_PATH
-        
-      - name: Railway Login
-        run: |
-          railway login --token ${{ secrets.RAILWAY_TOKEN }}
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        
-      - name: Deploy Backend Service to Railway
-        if: needs.build-backend.result == 'success'
-        run: |
-          railway init --project ${{ secrets.RAILWAY_PROJECT_ID }} --service backend
-          railway variables set BACKEND_IMAGE_URL="harithkavish/skinnet-analyzer:backend-latest"
-          railway deploy
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        
-      - name: Deploy ML Service to Railway
-        if: needs.build-ml.result == 'success'
-        run: |
-          railway init --project ${{ secrets.RAILWAY_PROJECT_ID }} --service ml
-          railway variables set ML_IMAGE_URL="harithkavish/skinnet-analyzer:ml-latest"
-          railway deploy
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        
