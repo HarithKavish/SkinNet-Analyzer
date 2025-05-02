@@ -93,10 +93,19 @@ jobs:
           HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
         run: |
           echo "Restarting Hugging Face Space: https://api.huggingface.co/spaces/$HF_SPACE_ID/restart"
-          sleep 5
-          curl -v -X POST "https://api.huggingface.co/spaces/$HF_SPACE_ID/restart" \
-            -H "Authorization: Bearer $HF_TOKEN"
-
+          ATTEMPTS=0
+          MAX_ATTEMPTS=5
+          until curl -v -X POST "https://api.huggingface.co/spaces/$HF_SPACE_ID/restart" \
+            -H "Authorization: Bearer $HF_TOKEN"; do
+             ATTEMPTS=$((ATTEMPTS+1))
+            if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]; then
+              echo "❌ Failed to restart Hugging Face Space after $MAX_ATTEMPTS attempts."
+              exit 1
+            fi
+            echo "🔄 Retrying in 5 seconds... (Attempt $ATTEMPTS)"
+            sleep 5
+          done
+      
       - name: Report Hugging Face Space Deployment
         uses: actions/github-script@v7
         with:
