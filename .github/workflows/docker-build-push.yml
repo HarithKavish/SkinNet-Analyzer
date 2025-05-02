@@ -98,7 +98,11 @@ jobs:
           curl -fsSL https://railway.app/install.sh | sh
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
         
-      - name: Deploy to Railway
+      - name: Set Railway Token Environment Variable
+        run: |
+          echo "RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }}" >> $GITHUB_ENV
+        
+      - name: Deploy Backend Service to Railway
         run: |
           railway up --service backend
         env:
