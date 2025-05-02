@@ -1,5 +1,4 @@
-# .github/workflows/deploy.yml
-name: Build, Push to Docker Hub, Deploy to Hugging Face
+name: Build, Push to Docker Hub, Deploy to Hugging Face and Railway
 
 on:
   push:
@@ -105,3 +104,40 @@ jobs:
             echo "🔄 Retrying in 5 seconds... (Attempt $ATTEMPTS)"
             sleep 5
           done
+
+  deploy-railway:
+    needs: [build-backend, build-ml]
+    runs-on: ubuntu-latest
+    if: |
+      needs.build-backend.result == 'success' ||
+      needs.build-ml.result == 'success'
+    steps:
+      - name: Install Railway CLI
+        run: |
+          curl -fsSL https://railway.app/install.sh | sh
+          echo "$HOME/.railway/bin" >> $GITHUB_PATH
+        
+      - name: Railway Login
+        run: |
+          railway login --token ${{ secrets.RAILWAY_TOKEN }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        
+      - name: Deploy Backend Service to Railway
+        if: needs.build-backend.result == 'success'
+        run: |
+          railway init --project ${{ secrets.RAILWAY_PROJECT_ID }} --service backend
+          railway variables set BACKEND_IMAGE_URL="harithkavish/skinnet-analyzer:backend-latest"
+          railway deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        
+      - name: Deploy ML Service to Railway
+        if: needs.build-ml.result == 'success'
+        run: |
+          railway init --project ${{ secrets.RAILWAY_PROJECT_ID }} --service ml
+          railway variables set ML_IMAGE_URL="harithkavish/skinnet-analyzer:ml-latest"
+          railway deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        
