@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set changed files
+      - name: Detect changed files
         id: set-vars
         run: |
           BACKEND_CHANGED=false
@@ -93,17 +93,22 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.build-backend.result == 'success'
     steps:
-      - name: Install Railway CLI
-        run: |
-          curl -fsSL https://railway.app/install.sh | sh
-          echo "$HOME/.railway/bin" >> $GITHUB_PATH
-      
-      - name: Deploy Backend Service to Railway
-        run: |
-          railway up -- --project ${{ secrets.RAILWAY_PROJECT_ID }} --service backend
+      - name: Deploy Backend Service to Railway via API
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-    
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+        run: |
+          echo "Triggering deployment to Railway via API..."
+
+          curl -X POST "https://backboard.railway.app/v2/projects/${RAILWAY_PROJECT_ID}/deployments" \
+            -H "Authorization: Bearer ${RAILWAY_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "deploymentType": "IMAGE",
+              "image": "harithkavish/skinnet-analyzer:backend-latest",
+              "serviceName": "backend"
+            }'
+
   deploy-huggingface:
     needs: build-ml
     runs-on: ubuntu-latest
