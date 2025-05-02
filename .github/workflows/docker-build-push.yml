@@ -97,16 +97,18 @@ jobs:
         run: |
           curl -fsSL https://railway.app/install.sh | sh
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
-        
-      - name: Set Railway Token Environment Variable
+
+      - name: Set Railway Token and Project ID Environment Variables
         run: |
           echo "RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }}" >> $GITHUB_ENV
-        
+          echo "RAILWAY_PROJECT_ID=${{ secrets.RAILWAY_PROJECT_ID }}" >> $GITHUB_ENV
+
       - name: Deploy Backend Service to Railway
         run: |
           railway up --service backend
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
 
   deploy-huggingface:
     needs: build-ml
