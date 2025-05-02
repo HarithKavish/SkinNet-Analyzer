@@ -15,8 +15,12 @@ logger = logging.getLogger(__name__)
 # FastAPI app initialization
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"message": "SkinNet-Analyzer is up and running!"}
+
 @app.get("/health")
-def health():
+async def health():
     return {"status": "ok"}
 
 @app.post("/predict")
