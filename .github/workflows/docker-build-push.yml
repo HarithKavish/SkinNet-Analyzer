@@ -3,7 +3,7 @@ name: Build, Push to Docker Hub, Deploy to Hugging Face
 on:
   push:
     branches:
-      - main  # Adjust if your main branch is named differently
+      - main  # Adjust if needed
 
 jobs:
   build-push-deploy:
@@ -13,6 +13,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set changed files
+        id: changes
+        run: |
+          echo "backend_changed=false" >> $GITHUB_ENV
+          echo "ml_changed=false" >> $GITHUB_ENV
+
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/'; then
+            echo "backend_changed=true" >> $GITHUB_ENV
+          fi
+
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^ml/'; then
+            echo "ml_changed=true" >> $GITHUB_ENV
+          fi
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -20,11 +34,13 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Backend Docker Image
+        if: env.backend_changed == 'true'
         run: |
           docker build -t harithkavish/skinnet-analyzer:backend-latest ./backend
           docker push harithkavish/skinnet-analyzer:backend-latest
 
       - name: Report Backend Build and Push
+        if: env.backend_changed == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -45,11 +61,13 @@ jobs:
             });
 
       - name: Build and Push ML Docker Image
+        if: env.ml_changed == 'true'
         run: |
           docker build -t harithkavish/skinnet-analyzer:ml-latest ./ml
           docker push harithkavish/skinnet-analyzer:ml-latest
 
       - name: Report ML Build and Push
+        if: env.ml_changed == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -74,7 +92,9 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
         run: |
-          curl -X POST https://api.huggingface.co/spaces/$HF_SPACE_ID/restart \
+          echo "Restarting Hugging Face Space: https://api.huggingface.co/spaces/$HF_SPACE_ID/restart"
+          sleep 5
+          curl -v -X POST "https://api.huggingface.co/spaces/$HF_SPACE_ID/restart" \
             -H "Authorization: Bearer $HF_TOKEN"
 
       - name: Report Hugging Face Space Deployment
