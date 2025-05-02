@@ -98,16 +98,12 @@ jobs:
           curl -fsSL https://railway.app/install.sh | sh
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
       
-      - name: Create Railway project.json
+      - name: Deploy Backend Service to Railway
         run: |
-          mkdir -p .railway
-          echo '{"projectId": "${{ secrets.RAILWAY_PROJECT_ID }}"}' > .railway/project.json
-      
-      - name: Deploy Backend to Railway
-        run: |
-          railway up --service backend
+          railway up --project ${{ secrets.RAILWAY_PROJECT_ID }} --service backend
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}    
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+     
     
   deploy-huggingface:
     needs: build-ml
