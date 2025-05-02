@@ -84,8 +84,8 @@ jobs:
     needs: [build-backend, build-ml]
     runs-on: ubuntu-latest
     if: |
-      needs.detect-changes.outputs.backend_changed == 'true' ||
-      needs.detect-changes.outputs.ml_changed == 'true'
+      needs.build-backend.result == 'success' ||
+      needs.build-ml.result == 'success'
     steps:
       - name: Restart Hugging Face Space
         env:
