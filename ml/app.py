@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 # FastAPI app initialization
 app = FastAPI()
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
