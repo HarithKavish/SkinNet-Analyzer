@@ -178,15 +178,28 @@ jobs:
       - name: Build project
         run: npm run build --prefix frontend
 
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build
+
   deploy-frontend:
     needs: build-frontend
     runs-on: ubuntu-latest
     if: needs.build-frontend.result == 'success'
     steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./frontend/build
-          publish_branch: production-frontend      # <--- deploy to gh-pages branch
+          publish_dir: frontend/build
+          publish_branch: production-frontend
           force_orphan: true
+          enable_jekyll: false

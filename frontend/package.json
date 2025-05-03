@@ -39,7 +39,7 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "gh-pages": "^6.3.0"
   },
-  "homepage": "https://harithkavish.github.io/SkinNet-Analyzer",
+  "homepage": "https://harithkavish.github.io/SkinNet-Analyzer/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
