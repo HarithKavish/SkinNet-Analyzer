@@ -154,7 +154,7 @@ jobs:
     steps:
     - name: Rebuild Hugging Face Space
       run: |
-        curl -X POST "https://huggingface.co/api/spaces/${{ secrets.HF_SPACE_ID }}/rebuild" \
+        curl -X POST "https://huggingface.co/spaces/${{ secrets.HF_SPACE_ID }}/rebuild" \
           -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}"
 
   build-frontend:
