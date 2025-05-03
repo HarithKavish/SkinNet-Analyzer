@@ -123,7 +123,7 @@ function Upload() {
 
   const checkBackendStatus = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/status`); // or '/status'
+      const response = await axios.get(`${BASE_URL}/api/status`); // or '/status' 
       if (response.status === 200) {
         setBackendStatus("Server Status: Online ✅");
       } else {
