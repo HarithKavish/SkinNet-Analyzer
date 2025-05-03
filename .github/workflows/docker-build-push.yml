@@ -100,29 +100,35 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.build-backend.result == 'success'
     steps:
-      - name: Trigger Render Deploy Hook with Environment Variables
+      - name: Trigger Render Deploy Hook with Docker Image and Environment Variables
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
           ML_API_URL: ${{ secrets.ML_API_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          IMAGE_TAG: ${{ needs.build-backend.outputs.image_tag }}  # Use the dynamically set image tag
         run: |
           echo "Triggering deployment on Render..."
-
+          
+          # Trigger Render deployment using the updated Docker image tag and environment variables
           curl -X POST "$RENDER_DEPLOY_HOOK_URL" \
             -H "Content-Type: application/json" \
             -d '{
-              "clearCache": true,
-              "envVars": [
-                {
-                  "key": "ML_API_URL",
-                  "value": "'"${ML_API_URL}"'"
-                },
-                {
-                  "key": "GEMINI_API_KEY",
-                  "value": "'"${GEMINI_API_KEY}"'"
-                }
-              ]
-            }'
+                  "clearCache": true,
+                  "envVars": [
+                    {
+                      "key": "ML_API_URL",
+                      "value": "'"${ML_API_URL}"'"
+                    },
+                    {
+                      "key": "GEMINI_API_KEY",
+                      "value": "'"${GEMINI_API_KEY}"'"
+                    },
+                    {
+                      "key": "DOCKER_IMAGE_TAG",
+                      "value": "'"${IMAGE_TAG}"'"  # Pass Docker image tag for deployment
+                    }
+                  ]
+                }'
 
   deploy-huggingface:
     needs: build-ml
