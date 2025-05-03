@@ -171,10 +171,10 @@ jobs:
       - name: Inject Environment Variables
         run: |
           echo "REACT_APP_BACKEND_API_URL=${{ secrets.FRONTEND_BACKEND_API_URL }}" > frontend/.env
-      
+
       - name: Install dependencies
         run: npm install --prefix frontend
-        
+      
       - name: Build project
         run: npm run build --prefix frontend
 
@@ -187,4 +187,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+          publish_dir: ./frontend/build  # Deploy the build folder
+          publish_branch: main          # Deploy to the `main` branch
+          force_orphan: true            # Make it an orphan branch (to prevent any history collision)
+
