@@ -137,7 +137,7 @@ function Upload() {
 
   useEffect(() => {
     checkBackendStatus(); // Check backend status on component mount
-  });//
+  });
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];

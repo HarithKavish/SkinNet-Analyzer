@@ -155,7 +155,7 @@ jobs:
               sleep 5
           done
 
-  build-deploy-frontend:
+  build-frontend:
     needs: detect-changes
     runs-on: ubuntu-latest
     if: needs.detect-changes.outputs.frontend_changed == 'true'
@@ -178,6 +178,11 @@ jobs:
       - name: Build project
         run: npm run build --prefix frontend
 
+  deploy-frontend:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    if: needs.build-frontend.result == 'success'
+    steps:
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

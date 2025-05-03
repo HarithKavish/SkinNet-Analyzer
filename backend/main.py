@@ -16,7 +16,7 @@ app = FastAPI()
 # CORS setup - Allow requests from specific origins (frontend URL)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://harithkavish.github.io", "http://localhost:3000"],  # Update this if you need more origins
+    allow_origins=["https://harithkavish.github.io/SkinNet-Analyze","https://harithkavish.github.io", "http://localhost:3000"],  # Update this if you need more origins
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allows all headers
