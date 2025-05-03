@@ -153,9 +153,11 @@ jobs:
     if: needs.build-ml.result == 'success'
     steps:
     - name: Rebuild Hugging Face Space
+      env:
+            HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
-        curl -X POST "https://huggingface.co/spaces/${{ secrets.HF_SPACE_ID }}/rebuild" \
-          -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}"
+        curl -X POST -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}" \
+          https://huggingface.co/api/spaces/${{ secrets.HF_SPACE_ID }}/rebuild
 
   build-frontend:
     needs: detect-changes
