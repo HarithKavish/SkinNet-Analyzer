@@ -5,4 +5,4 @@ router = APIRouter()
 
 @router.get("/status")
 async def status():
-    return JSONResponse(content={"status": "online"}, status_code=200)
+    return JSONResponse(content={"status": "online","deployed_at": "03-05-2025 01:00 PM"}, status_code=200)
