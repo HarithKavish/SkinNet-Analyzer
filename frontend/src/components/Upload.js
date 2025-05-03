@@ -255,7 +255,7 @@ function Upload() {
       const pdf = new jsPDF("p", "mm", "a4");
 
       const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm 
+      const pageHeight = 297; // A4 height in mm  
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
       let y = 0; // Position to start adding images

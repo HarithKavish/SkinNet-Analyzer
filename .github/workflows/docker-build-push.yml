@@ -95,57 +95,41 @@ jobs:
 
           echo "image_tag=$TAG" >> $GITHUB_OUTPUT
 
-  deploy-render:
+  deploy-railway:
     needs: build-backend
     runs-on: ubuntu-latest
+    if: needs.build-backend.result == 'success'
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set environment variables
-        run: |
-          echo "IMAGE_REPO=harithkavish/skinnet-analyzer" >> $GITHUB_ENV
-          echo "IMAGE_TAG=backend-latest" >> $GITHUB_ENV
-
-      - name: Update Render Service with new Image and Env Vars
+      - name: Trigger Railway Deployment via API
         env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
           ML_API_URL: ${{ secrets.ML_API_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          echo "Updating Render Service $RENDER_SERVICE_ID with new Docker image and env vars..."
-
-          curl -X PATCH "https://api.render.com/v1/services/$RENDER_SERVICE_ID" \
-            -H "Authorization: Bearer $RENDER_API_KEY" \
-            -H "Content-Type: application/json" \
-            --data '{
-              "serviceDetails": {
-                "image": {
-                  "dockerHub": {
-                    "repository": "'"$IMAGE_REPO"'",
-                    "tag": "'"$IMAGE_TAG"'"
-                  }
-                },
-                "envVars": [
-                  {
-                    "key": "GEMINI_API_KEY",
-                    "value": "'"$GEMINI_API_KEY"'"
-                  },
-                  {
-                    "key": "ML_API_URL",
-                    "value": "'"$ML_API_URL"'"
-                  }
-                ]
+          echo "Triggering deployment to Railway via API with environment variables..."
+        
+          curl -X POST "https://backboard.railway.app/v2/projects/${RAILWAY_PROJECT_ID}/deployments" \
+          -H "Authorization: Bearer ${RAILWAY_TOKEN}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "deploymentType": "IMAGE",
+            "image": "harithkavish/skinnet-analyzer:backend-latest",
+            "serviceName": "backend",
+            "envs": [
+              {
+                "key": "ML_API_URL",
+                "value": "'"${ML_API_URL}"'"
+              },
+              {
+                "key": "GEMINI_API_KEY",
+                "value": "'"${GEMINI_API_KEY}"'"
               }
-            }'
-
-      - name: Trigger Render Deploy Hook
-        env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: |
-          echo "Triggering Render Deploy Hook..."
-          curl -X POST "$RENDER_DEPLOY_HOOK_URL"
+            ],
+            "meta": {
+              "forceDeploy": true
+            }
+          }'
 
   deploy-huggingface:
     needs: build-ml
