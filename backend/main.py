@@ -16,7 +16,7 @@ app = FastAPI()
 # CORS setup - Allow requests from specific origins (frontend URL)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://harithkavish.github.io/SkinNet-Analyze","https://harithkavish.github.io", "http://localhost:3000"],  # Update this if you need more origins
+    allow_origins=["https://harithkavish.github.io/SkinNet-Analyzer/","https://harithkavish.github.io", "http://localhost:3000"],  # Update this if you need more origins
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allows all headers
@@ -33,4 +33,4 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))  # Default port 8000 for local development
     uvicorn.run(app, host="0.0.0.0", port=port)
 
-# uvicorn main:app --reload  
+# uvicorn main:app --reload 

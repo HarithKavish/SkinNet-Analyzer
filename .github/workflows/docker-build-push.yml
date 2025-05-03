@@ -108,29 +108,26 @@ jobs:
           ML_API_URL: ${{ secrets.ML_API_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          echo "Triggering IMAGE deployment to Railway..."
-
-          curl -X POST "https://backboard.railway.app/v2/projects/${RAILWAY_PROJECT_ID}/deployments" \
-          -H "Authorization: Bearer ${RAILWAY_TOKEN}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "deploymentType": "IMAGE",
-            "serviceId": "'"${RAILWAY_SERVICE_ID}"'",
-            "image": "harithkavish/skinnet-analyzer:backend-latest",
-            "envs": [
-              {
-                "key": "ML_API_URL",
-                "value": "'"${ML_API_URL}"'"
-              },
-              {
-                "key": "GEMINI_API_KEY",
-                "value": "'"${GEMINI_API_KEY}"'"
+          curl -X PATCH "https://backboard.railway.app/v2/services/${RAILWAY_SERVICE_ID}" \
+            -H "Authorization: Bearer ${RAILWAY_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "deploymentType": "IMAGE",
+              "image": "harithkavish/skinnet-analyzer:backend-latest",
+              "envs": [
+                {
+                  "key": "ML_API_URL",
+                  "value": "'"${ML_API_URL}"'"
+                },
+                {
+                  "key": "GEMINI_API_KEY",
+                  "value": "'"${GEMINI_API_KEY}"'"
+                }
+              ],
+              "meta": {
+                "forceDeploy": true
               }
-            ],
-            "meta": {
-              "forceDeploy": true
-            }
-          }'
+            }'
 
   deploy-huggingface:
     needs: build-ml
