@@ -131,7 +131,7 @@ function Upload() {
       }
     } catch (error) {
       console.error("Error connecting to backend:", error);
-      setBackendStatus("Server Status: Offline ❌ . Disclaimer: This is site is for Demo purposes only. Do not use for actual diagnosis");
+      setBackendStatus("Server Status: Offline ❌");
     }
   };
 
