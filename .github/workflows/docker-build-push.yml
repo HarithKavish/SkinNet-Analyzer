@@ -149,7 +149,7 @@ jobs:
 
   deploy-huggingface:
     needs: build-ml
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: needs.build-ml.result == 'success'
     steps:
       - name: Rebuild Hugging Face Space
@@ -157,27 +157,27 @@ jobs:
           HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          echo "🔵 Checking Hugging Face API DNS..."
+          echo "Checking Hugging Face API DNS..."
           if ! nslookup api.huggingface.co > /dev/null; then
-            echo "❌ DNS resolution failed for api.huggingface.co"
+            echo "DNS lookup failed for api.huggingface.co."
             exit 1
           fi
 
-          echo "🚀 Triggering rebuild for Space: $HF_SPACE_ID"
+          echo "Triggering Hugging Face Space rebuild..."
           ATTEMPTS=0
           MAX_ATTEMPTS=5
           until curl -f -X POST "https://api.huggingface.co/spaces/$HF_SPACE_ID/rebuild" \
             -H "Authorization: Bearer $HF_TOKEN"; do
             ATTEMPTS=$((ATTEMPTS+1))
             if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]; then
-              echo "❌ Failed to trigger Hugging Face rebuild after $MAX_ATTEMPTS attempts."
+              echo "Failed to trigger rebuild after $MAX_ATTEMPTS attempts."
               exit 1
             fi
-            echo "🔄 Retry in 5 seconds... (Attempt $ATTEMPTS)"
+            echo "Retrying in 5 seconds... (Attempt $ATTEMPTS)"
             sleep 5
           done
 
-          echo "✅ Hugging Face Space rebuild triggered successfully."
+          echo "Space rebuild triggered successfully."
 
   build-frontend:
     needs: detect-changes
