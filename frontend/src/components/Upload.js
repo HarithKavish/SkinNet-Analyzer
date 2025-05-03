@@ -217,7 +217,7 @@ function Upload() {
       setResult("Error processing symptoms.");
       setIsSubmitting(false); // Remove loading if error occurs
     }
-  };//
+  };
 
 
   const fetchFullDiseaseInfo = async (disease, severity) => {
