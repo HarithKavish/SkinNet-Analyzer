@@ -162,7 +162,7 @@ jobs:
           HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
         run: |
           echo "Triggering Hugging Face Space rebuild..."
-          hf space rebuild ${{ secrets.HF_SPACE_ID }} --token ${{ secrets.HF_TOKEN }}
+          python -m huggingface_hub.space rebuild ${{ secrets.HF_SPACE_ID }} --token ${{ secrets.HF_TOKEN }}
 
   build-frontend:
     needs: detect-changes
