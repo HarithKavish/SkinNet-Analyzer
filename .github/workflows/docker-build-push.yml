@@ -152,17 +152,10 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.build-ml.result == 'success'
     steps:
-      - name: Set up Hugging Face CLI
-        run: |
-          pip install huggingface_hub
-
-      - name: Trigger Hugging Face rebuild
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
-        run: |
-          echo "Triggering Hugging Face Space rebuild..."
-          python -m huggingface_hub.space rebuild ${{ secrets.HF_SPACE_ID }} --token ${{ secrets.HF_TOKEN }}
+    - name: Rebuild Hugging Face Space
+      run: |
+        curl -X POST "https://huggingface.co/api/spaces/${{ secrets.HF_SPACE_ID }}/rebuild" \
+          -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}"
 
   build-frontend:
     needs: detect-changes
