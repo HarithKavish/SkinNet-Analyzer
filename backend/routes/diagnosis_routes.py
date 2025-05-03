@@ -17,7 +17,7 @@ load_dotenv()
 ML_API_URL = os.getenv("ML_API_URL")
 
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...), location: str = Form(...)):
+async def upload_file(file: UploadFile = File(...)):
     if not file:
         raise HTTPException(status_code=400, detail="No file uploaded")
     if file.filename == "":
