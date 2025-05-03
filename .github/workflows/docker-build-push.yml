@@ -100,36 +100,21 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.build-backend.result == 'success'
     steps:
-      - name: Trigger Railway Deployment via API
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: curl -fsSL https://railway.app/install.sh | sh
+
+      - name: Deploy updated Docker image
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-          ML_API_URL: ${{ secrets.ML_API_URL }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}  # Personal token (not project token)
         run: |
-          echo "Triggering deployment to Railway via API with environment variables..."
-        
-          curl -X POST "https://backboard.railway.app/v2/projects/${RAILWAY_PROJECT_ID}/deployments" \
-          -H "Authorization: Bearer ${RAILWAY_TOKEN}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "deploymentType": "IMAGE",
-            "image": "harithkavish/skinnet-analyzer:backend-latest",
-            "serviceName": "backend",
-            "envs": [
-              {
-                "key": "ML_API_URL",
-                "value": "'"${ML_API_URL}"'"
-              },
-              {
-                "key": "GEMINI_API_KEY",
-                "value": "'"${GEMINI_API_KEY}"'"
-              }
-            ],
-            "meta": {
-              "forceDeploy": true
-            }
-          }'
+          echo "Deploying updated Docker image to Railway..."
+          railway link ${{ secrets.RAILWAY_PROJECT_ID }}  # Optional if not already linked
+          railway service update \
+            --service ${{ secrets.RAILWAY_SERVICE_NAME }} \
+            --image yourdockerhubuser/yourimagename:latest
 
   deploy-huggingface:
     needs: build-ml
