@@ -27,7 +27,7 @@ app.include_router(status_router, prefix="/api")
 app.include_router(diagnosis_router, prefix="/api")
 app.include_router(info_router, prefix="/api")
 
-# Optional: For running directly 
+# Optional: For running directly
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))  # Default port 8000 for local development

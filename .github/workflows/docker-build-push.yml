@@ -108,13 +108,15 @@ jobs:
 
       - name: Deploy updated Docker image
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}  # Personal token (not project token)
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_SERVICE_NAME: ${{ secrets.RAILWAY_SERVICE_NAME }}
         run: |
           echo "Deploying updated Docker image to Railway..."
-          railway link ${{ secrets.RAILWAY_PROJECT_ID }}  # Optional if not already linked
           railway service update \
-            --service ${{ secrets.RAILWAY_SERVICE_NAME }} \
-            --image yourdockerhubuser/yourimagename:latest
+            --project $RAILWAY_PROJECT_ID \
+            --service $RAILWAY_SERVICE_NAME \
+            --image harithkavish/skinnet-analyzer:backend-latest
 
   deploy-huggingface:
     needs: build-ml
