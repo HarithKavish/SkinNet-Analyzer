@@ -119,7 +119,7 @@ function Upload() {
   useEffect(() => {
     // Simulate output completion
     setTimeout(() => setIsOutputReady(true), 2000); // Adjust based on real output loading time
-  }, []);//
+  }, []);
 
   const checkBackendStatus = async () => {
     try {
