@@ -100,23 +100,26 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.build-backend.result == 'success'
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: curl -fsSL https://railway.app/install.sh | sh
-
-      - name: Deploy updated Docker image
+      - name: Deploy updated Docker image via Railway API
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-          RAILWAY_SERVICE_NAME: ${{ secrets.RAILWAY_SERVICE_NAME }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+          DOCKER_IMAGE: yourdockerhubuser/yourimagename:latest
         run: |
-          echo "Deploying updated Docker image to Railway..."
-          railway service update \
-            --project $RAILWAY_PROJECT_ID \
-            --service $RAILWAY_SERVICE_NAME \
-            --image harithkavish/skinnet-analyzer:backend-latest
+          echo "Triggering deploy via Railway API..."
+
+          curl -X PATCH https://backboard.railway.app/v2/services/$RAILWAY_SERVICE_ID \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "source": {
+                "type": "image",
+                "imageConfig": {
+                  "image": "'"$DOCKER_IMAGE"'"
+                }
+              }
+            }'
 
   deploy-huggingface:
     needs: build-ml
