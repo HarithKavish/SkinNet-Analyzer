@@ -105,7 +105,7 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
           RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
-          DOCKER_IMAGE: yourdockerhubuser/yourimagename:latest
+          DOCKER_IMAGE: harithkavish/skinnet-analyzer:backend-latest
         run: |
           echo "Triggering deploy via Railway API..."
 
