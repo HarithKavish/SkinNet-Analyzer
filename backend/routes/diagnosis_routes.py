@@ -39,7 +39,7 @@ async def upload_file(file: UploadFile = File(...)):
     return JSONResponse(content={"questions": questions})
 
 class SymptomResponse(BaseModel):
-    answers: Dict[str, str]  # symptom name -> '1' or '0'
+    answers: Dict[str, str]  # symptom name -> '1' or '0' 
 
 @router.post("/confirm_symptoms")
 async def confirm_symptoms(data: SymptomResponse):

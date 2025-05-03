@@ -104,18 +104,19 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
           ML_API_URL: ${{ secrets.ML_API_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          echo "Triggering deployment to Railway via API with environment variables..."
-        
+          echo "Triggering IMAGE deployment to Railway..."
+
           curl -X POST "https://backboard.railway.app/v2/projects/${RAILWAY_PROJECT_ID}/deployments" \
           -H "Authorization: Bearer ${RAILWAY_TOKEN}" \
           -H "Content-Type: application/json" \
           -d '{
             "deploymentType": "IMAGE",
+            "serviceId": "'"${RAILWAY_SERVICE_ID}"'",
             "image": "harithkavish/skinnet-analyzer:backend-latest",
-            "serviceName": "backend",
             "envs": [
               {
                 "key": "ML_API_URL",
