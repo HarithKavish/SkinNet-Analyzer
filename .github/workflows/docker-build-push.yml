@@ -187,7 +187,6 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./frontend/build  # Deploy the build folder
-          publish_branch: main          # Deploy to the `main` branch
-          force_orphan: true            # Make it an orphan branch (to prevent any history collision)
-
+          publish_dir: ./frontend/build
+          publish_branch: production-frontend      # <--- deploy to gh-pages branch
+          force_orphan: true
