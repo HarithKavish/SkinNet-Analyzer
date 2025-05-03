@@ -17,7 +17,7 @@ app = FastAPI()
 
 @app.get("/")
 async def health():
-    return {"status": "ok","deployed_at": "03-05-2025 02:05 PM"}
+    return {"status": "ok","deployed_at": "03-05-2025 06:10 PM"}
 
 @app.post("/")
 async def predict(file: UploadFile = File(...)):
