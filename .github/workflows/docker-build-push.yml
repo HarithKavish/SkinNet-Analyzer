@@ -200,6 +200,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: frontend/build
-          publish_branch: production-frontend
+          publish_branch: gh-pages
           force_orphan: true
           enable_jekyll: false
