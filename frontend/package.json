@@ -15,12 +15,6 @@
     "remark-gfm": "^4.0.1",
     "web-vitals": "^4.2.4"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "predeploy": "npm run build",
-    "deploy": "npm run build && rmdir /s /q \"../docs\" 2>nul & move build ../docs && git add ../docs && git commit -m \"Deploy to GitHub Pages\" && git push"
-  },
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -42,5 +36,9 @@
   "devDependencies": {
     "gh-pages": "^6.3.0"
   },
-  "homepage": "https://harithkavish.github.io/SkinNet-Analyzer/"
+  "homepage": "https://harithkavish.github.io/SkinNet-Analyzer/",
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
+  }
 }

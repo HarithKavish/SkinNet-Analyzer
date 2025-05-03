@@ -1,4 +1,4 @@
-name: Build, Push to Docker Hub, Deploy to Hugging Face and Railway
+name: Build, Push to Docker Hub, Deploy to Hugging Face, Railway, and GitHub Pages
 
 on:
   push:
@@ -11,6 +11,7 @@ jobs:
     outputs:
       backend_changed: ${{ steps.set-vars.outputs.backend_changed }}
       ml_changed: ${{ steps.set-vars.outputs.ml_changed }}
+      frontend_changed: ${{ steps.set-vars.outputs.frontend_changed }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,17 +23,23 @@ jobs:
         run: |
           BACKEND_CHANGED=false
           ML_CHANGED=false
-      
+          FRONTEND_CHANGED=false
+
           if git diff --name-only HEAD~1 HEAD | grep '^backend/'; then
             BACKEND_CHANGED=true
           fi
-      
+
           if git diff --name-only HEAD~1 HEAD | grep '^ml/'; then
             ML_CHANGED=true
           fi
-      
+
+          if git diff --name-only HEAD~1 HEAD | grep '^frontend/'; then
+            FRONTEND_CHANGED=true
+          fi
+
           echo "backend_changed=$BACKEND_CHANGED" >> $GITHUB_OUTPUT
           echo "ml_changed=$ML_CHANGED" >> $GITHUB_OUTPUT
+          echo "frontend_changed=$FRONTEND_CHANGED" >> $GITHUB_OUTPUT
 
   build-backend:
     needs: detect-changes
@@ -140,10 +147,39 @@ jobs:
           until curl -v -X POST "https://api.huggingface.co/spaces/$HF_SPACE_ID/rebuild" \
             -H "Authorization: Bearer $HF_TOKEN"; do
               ATTEMPTS=$((ATTEMPTS+1))
-            if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]; then
-              echo "❌ Failed to rebuild Hugging Face Space after $MAX_ATTEMPTS attempts."
-              exit 1
-            fi
-            echo "🔄 Retrying in 5 seconds... (Attempt $ATTEMPTS)"
-            sleep 5
+              if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]; then
+                echo "❌ Failed to rebuild Hugging Face Space after $MAX_ATTEMPTS attempts."
+                exit 1
+              fi
+              echo "🔄 Retrying in 5 seconds... (Attempt $ATTEMPTS)"
+              sleep 5
           done
+
+  build-deploy-frontend:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.frontend_changed == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install --prefix frontend
+
+      - name: Inject Environment Variables
+        run: |
+          echo "REACT_APP_BACKEND_API_URL=${{ secrets.FRONTEND_BACKEND_API_URL }}" >> frontend/.env
+
+      - name: Build project
+        run: npm run build --prefix frontend
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/build
