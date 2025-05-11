@@ -152,30 +152,10 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.build-ml.result == 'success'
     steps:
-      # Checkout the current repo to get the latest code
-      - name: Checkout current repo
-        uses: actions/checkout@v4
-
-      # Checkout Hugging Face Space (ensure you have the correct permissions)
-      - name: Checkout Hugging Face Space
-        uses: actions/checkout@v4
-        with:
-          repository: harithkavish/SkinNet-Analyzer  # Hugging Face Space repository
-          token: ${{ secrets.HF_TOKEN }}
-          path: ${{ secrets.HF_SPACE_ID }}  # Using HF_SPACE_ID secret here
-
-      # Make necessary updates (docker image, etc.) and commit
-      - name: Update and Commit to Hugging Face Space
+      - name: Trigger Hugging Face Space rebuild
         run: |
-          cd hf_space
-          # Create/Update the necessary files that should trigger the rebuild
-          echo "Trigger rebuild after Docker image update" > rebuild_trigger.txt
-          # Add, commit, and push changes
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add rebuild_trigger.txt
-          git commit -m "Trigger rebuild after Docker image update"
-          git push origin main  # Ensure this matches your Hugging Face Space branch (commonly 'main')
+          curl -X POST https://api-inference.huggingface.co/spaces/harithkavish/SkinNet-Analyzer/rebuild \
+          -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}"
 
   build-frontend:
     needs: detect-changes
