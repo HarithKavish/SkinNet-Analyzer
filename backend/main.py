@@ -1,22 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from routes.status_routes import router as status_router
+from routes.diagnosis_routes import router as diagnosis_router
+from routes.info_routes import router as info_router
+from routes.status_routes import lifespan  # Import lifespan from status_routes
 
 # Create logs directory if it doesn't exist
 os.makedirs("logs", exist_ok=True)
 
-# Import routers
-from routes.status_routes import router as status_router
-from routes.diagnosis_routes import router as diagnosis_router
-from routes.info_routes import router as info_router
-
-# Create FastAPI instance
-app = FastAPI()
+# Create FastAPI instance with lifespan event handler
+app = FastAPI(lifespan=lifespan)  # Assign lifespan function to the app
 
 # CORS setup - Allow requests from specific origins (frontend URL)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://harithkavish.github.io/SkinNet-Analyzer/","https://harithkavish.github.io", "http://localhost:3000"],  # Update this if you need more origins
+    allow_origins=["https://harithkavish.github.io/SkinNet-Analyzer/", "https://harithkavish.github.io", "http://localhost:3000"],  # Update this if you need more origins
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allows all headers

@@ -6,6 +6,8 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import uvicorn
+import pytz  # Import pytz for timezone management
+from contextlib import asynccontextmanager  # For creating lifespan event handlers
 
 from classify import ensemble_classify  # Your classification logic
 
@@ -19,12 +21,15 @@ startup_logger = logging.getLogger("ml_startup_events")
 # FastAPI app initialization
 app = FastAPI()
 
+# Set your local timezone (replace with your desired timezone)
+local_timezone = pytz.timezone("Asia/Kolkata")  # Change to your desired timezone if needed
+
 # Deployment timestamp (frozen once at startup)
-DEPLOYED_AT = datetime.now().strftime("%d-%m-%Y %I:%M %p")
+DEPLOYED_AT = datetime.now(local_timezone).strftime("%d-%m-%Y %I:%M %p")
 
 @app.get("/")
 async def health(request: Request):
-    current_time = datetime.now().strftime("%d-%m-%Y %I:%M %p")
+    current_time = datetime.now(local_timezone).strftime("%d-%m-%Y %I:%M %p")
     heartbeat = request.headers.get("X-Heartbeat", "false").lower() == "true"
 
     if heartbeat:
@@ -60,9 +65,15 @@ async def predict(file: UploadFile = File(...)):
         user_logger.exception("Prediction failed.")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.on_event("startup")
-async def startup_event():
+# Use lifespan for startup event
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     startup_logger.info(f"ML API backend redeployed at {DEPLOYED_AT}")
+    yield
+    # Here you could also handle shutdown events if needed
+
+# Assign the lifespan function to FastAPI's lifespan parameter
+app.lifespan = lifespan
 
 # To run using: uvicorn ml_backend:app --host 0.0.0.0 --port 7860
 if __name__ == "__main__":

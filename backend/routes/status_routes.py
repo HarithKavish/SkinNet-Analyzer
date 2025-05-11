@@ -2,23 +2,26 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import logging
-import os
+import pytz  # For timezone handling
+from contextlib import asynccontextmanager  # For lifespan event handler
 
 router = APIRouter()
 
-# Setup loggers (separate channels)
+# Configure loggers
+logging.basicConfig(level=logging.INFO)
 user_logger = logging.getLogger("user_pings")
 cron_logger = logging.getLogger("cron_pings")
 startup_logger = logging.getLogger("startup_events")
 
-# Optional: configure handlers separately if needed
+# Set your local timezone (update to your timezone)
+local_timezone = pytz.timezone("Asia/Kolkata")  # Example: change to your preferred timezone
 
-# Deployment timestamp - loaded once on startup
-DEPLOYED_AT = datetime.now().strftime("%d-%m-%Y %I:%M %p")
+# Deployment timestamp (frozen once at startup)
+DEPLOYED_AT = datetime.now(local_timezone).strftime("%d-%m-%Y %I:%M %p")
 
 @router.get("/status")
 async def status(request: Request):
-    current_time = datetime.now().strftime("%d-%m-%Y %I:%M %p")
+    current_time = datetime.now(local_timezone).strftime("%d-%m-%Y %I:%M %p")
     heartbeat = request.headers.get("X-Heartbeat", "false").lower() == "true"
     
     if heartbeat:
@@ -35,7 +38,8 @@ async def status(request: Request):
         status_code=200
     )
 
-# Log server startup
-@router.on_event("startup")
-async def startup_event():
+# Lifespan event handler for startup
+@asynccontextmanager
+async def lifespan(app):
     startup_logger.info(f"Backend redeployed at {DEPLOYED_AT}")
+    yield  # Startup is handled here; you could add shutdown handling here if needed.
