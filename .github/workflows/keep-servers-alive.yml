@@ -1,0 +1,22 @@
+name: Keep Services Alive
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Every 5 minutes to keep services alive
+
+jobs:
+  keepalive-huggingface:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Hugging Face API to keep it alive
+        run: |
+          echo "Pinging Hugging Face API to keep it alive..."
+          curl --silent --show-error --fail "${{ secrets.ML_API_URL }}/" || true  # Assuming `/` is the health check endpoint
+
+  keepalive-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend API to keep it alive
+        run: |
+          echo "Pinging Backend API to keep it alive..."
+          curl --silent --show-error --fail "${{ secrets.FRONTEND_BACKEND_API_URL }}/api/status" || true
