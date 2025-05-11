@@ -1,6 +1,9 @@
 name: Keep Services Alive
 
 on:
+  push:
+    branches:
+      - main   # Trigger on push to the main branch (you can change this if needed)
   schedule:
     - cron: '*/5 * * * *'  # Every 5 minutes to keep services alive
 
@@ -11,7 +14,7 @@ jobs:
       - name: Ping Hugging Face API to keep it alive
         run: |
           echo "Pinging Hugging Face API to keep it alive..."
-          curl --silent --show-error --fail "${{ secrets.ML_API_URL }}/" || true  # Assuming `/` is the health check endpoint
+          curl --silent --show-error --fail "${{ secrets.ML_API_URL }}" || true
 
   keepalive-backend:
     runs-on: ubuntu-latest
