@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Ensure the logs directory exists
+RUN mkdir -p /app/logs
+
 # Copy requirements first for caching
 COPY requirements.txt .
 
