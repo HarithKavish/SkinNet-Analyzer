@@ -3,23 +3,26 @@ name: Keep Services Alive
 on:
   push:
     branches:
-      - main   # Trigger on push to the main branch (you can change this if needed)
+      - main
   schedule:
-    - cron: '*/5 * * * *'  # Every 5 minutes to keep services alive
+    - cron: '*/5 * * * *'
 
 jobs:
-  keepalive-huggingface:
+  keepalive:
     runs-on: ubuntu-latest
-    steps:
-      - name: Ping Hugging Face API to keep it alive
-        run: |
-          echo "Pinging Hugging Face API to keep it alive..."
-          curl --silent --show-error --fail "${{ secrets.ML_API_URL }}" || true
+    strategy:
+      matrix:
+        service: [ml, backend]
 
-  keepalive-backend:
-    runs-on: ubuntu-latest
     steps:
-      - name: Ping Backend API to keep it alive
+      - name: Ping ${{ matrix.service }} service
         run: |
-          echo "Pinging Backend API to keep it alive..."
-          curl --silent --show-error --fail "${{ secrets.FRONTEND_BACKEND_API_URL }}/api/status" || true
+          if [[ "${{ matrix.service }}" == "ml" ]]; then
+            echo "Pinging Hugging Face API..."
+            curl --fail --silent --show-error -H "X-Heartbeat: true" "${{ secrets.ML_API_URL }}" || echo "Ping failed but continuing."
+          elif [[ "${{ matrix.service }}" == "backend" ]]; then
+            echo "Pinging Backend API..."
+            curl --fail --silent --show-error -H "X-Heartbeat: true" "${{ secrets.FRONTEND_BACKEND_API_URL }}/api/status" || echo "Ping failed but continuing."
+          else
+            echo "Unknown service."
+          fi

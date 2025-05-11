@@ -2,31 +2,46 @@ import logging
 import numpy as np
 import cv2
 from PIL import Image
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.responses import JSONResponse
+from datetime import datetime
 import uvicorn
 
 from classify import ensemble_classify  # Your classification logic
 
-# Configure logging
+# Configure loggers
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+
+user_logger = logging.getLogger("ml_user_requests")
+cron_logger = logging.getLogger("ml_cron_heartbeats")
+startup_logger = logging.getLogger("ml_startup_events")
 
 # FastAPI app initialization
 app = FastAPI()
 
+# Deployment timestamp (frozen once at startup)
+DEPLOYED_AT = datetime.now().strftime("%d-%m-%Y %I:%M %p")
+
 @app.get("/")
-async def health():
-    return {"status": "ok","deployed_at": "03-05-2025 08:00 PM"}
+async def health(request: Request):
+    current_time = datetime.now().strftime("%d-%m-%Y %I:%M %p")
+    heartbeat = request.headers.get("X-Heartbeat", "false").lower() == "true"
+
+    if heartbeat:
+        cron_logger.info(f"Cronjob heartbeat ping at {current_time}")
+    else:
+        user_logger.info(f"User accessed health check at {current_time}")
+
+    return {"status": "ok", "deployed_at": DEPLOYED_AT, "checked_at": current_time}
 
 @app.post("/")
 async def predict(file: UploadFile = File(...)):
     try:
-        logger.info(f"Received file with content type: {file.content_type}")
+        user_logger.info(f"Prediction request received. File content type: {file.content_type}")
 
         # Validate file type
         if file.content_type not in ["image/jpeg", "image/png"]:
-            logger.error(f"Invalid file type: {file.content_type}")
+            user_logger.error(f"Invalid file type: {file.content_type}")
             raise HTTPException(status_code=400, detail="Invalid file type. Please upload a JPEG or PNG image.")
 
         image_bytes = await file.read()
@@ -42,11 +57,13 @@ async def predict(file: UploadFile = File(...)):
         return JSONResponse(content={"predictions": top_3_predictions})
 
     except Exception as e:
-        logger.exception("Prediction failed.")
+        user_logger.exception("Prediction failed.")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.on_event("startup")
+async def startup_event():
+    startup_logger.info(f"ML API backend redeployed at {DEPLOYED_AT}")
 
 # To run using: uvicorn ml_backend:app --host 0.0.0.0 --port 7860
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=7860)
-
-# A new change made 1
