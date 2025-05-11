@@ -168,7 +168,6 @@ jobs:
           date > trigger.txt
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git pull origin main --rebase
           git add trigger.txt
           git commit -m "Trigger rebuild after Docker image update"
           git push
