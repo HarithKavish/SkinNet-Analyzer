@@ -109,19 +109,6 @@ jobs:
 
           echo "image_tag=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Set up Git identity
-        run: |
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-
-      - name: Update README.md to trigger Hugging Face rebuild
-        run: |
-          cd huggingface-space
-          echo "Rebuild: $(date)" >> README.md
-          git add README.md
-          git commit -m "Trigger Hugging Face rebuild after Docker push"
-          git push
-
   deploy-render:
     needs: build-backend
     runs-on: ubuntu-latest
@@ -183,6 +170,18 @@ jobs:
         run: |
           curl -X POST https://huggingface.co/api/spaces/harithkavish/SkinNet-Analyzer/restart \
             -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}"
+
+      - name: Set up Git identity
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Update README.md to trigger Hugging Face rebuild
+        run: |
+          echo "Rebuild: $(date)" >> README.md
+          git add README.md
+          git commit -m "Trigger Hugging Face rebuild after Docker push"
+          git push
 
   build-frontend:
     needs: detect-changes
