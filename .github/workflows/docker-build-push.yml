@@ -154,7 +154,7 @@ jobs:
     steps:
       - name: Trigger Hugging Face Space rebuild
         run: |
-          curl -X POST https://huggingface.co/api/spaces/harithkavish/SkinNet-Analyzer/restart ` 
+          curl -X POST https://huggingface.co/api/spaces/harithkavish/SkinNet-Analyzer/restart \
             -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}"
 
   build-frontend:
