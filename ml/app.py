@@ -37,7 +37,7 @@ async def health(request: Request):
     else:
         user_logger.info(f"User accessed health check at {current_time}")
 
-    return {"status": "okay ", "deployed_at": DEPLOYED_AT, "checked_at": current_time}
+    return {"status": "ok", "deployed_at": DEPLOYED_AT, "checked_at": current_time}
 
 @app.post("/")
 async def predict(file: UploadFile = File(...)):
