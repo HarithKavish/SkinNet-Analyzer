@@ -131,7 +131,12 @@ jobs:
           echo "Prepared Payload:"
           echo "$JSON_PAYLOAD"
 
-          echo "Sending PUT request to Render..."
+          # Validate JSON with jq to catch any errors
+          echo "$JSON_PAYLOAD" | jq empty
+          if [ $? -ne 0 ]; then
+            echo "❌ Invalid JSON detected. Exiting."
+            exit 1
+          fi
 
           # Send the PUT request, capture HTTP status separately
           HTTP_RESPONSE=$(curl -s -o response.txt -w "%{http_code}" \
