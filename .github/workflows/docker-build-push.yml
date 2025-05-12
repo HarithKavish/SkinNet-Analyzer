@@ -107,29 +107,6 @@ jobs:
           echo "IMAGE_REPO=harithkavish/skinnet-analyzer" >> $GITHUB_ENV
           echo "IMAGE_TAG=backend-latest" >> $GITHUB_ENV
 
-      - name: Update Render Service with new Image
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          ML_API_URL: ${{ secrets.ML_API_URL }}
-        run: |
-          echo "Updating Render Service $RENDER_SERVICE_ID with new Docker image and env vars..."
-
-          curl -X PATCH "https://api.render.com/v1/services/$RENDER_SERVICE_ID" \
-            -H "Authorization: Bearer $RENDER_API_KEY" \
-            -H "Content-Type: application/json" \
-            --data '{
-              "serviceDetails": {
-                "image": {
-                  "dockerHub": {
-                    "repository": "'"$IMAGE_REPO"'",
-                    "tag": "'"$IMAGE_TAG"'"
-                  }
-                }
-              }
-            }'
-
       - name: Update Render Environment Variables
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -137,7 +114,8 @@ jobs:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
         run: |
-          # Prepare JSON body for the PATCH request
+          echo "Updating Render environment variables..."
+
           PAYLOAD=$(jq -n --arg gemini "$GEMINI_API_KEY" --arg mlurl "$ML_API_URL" --arg serviceId "$RENDER_SERVICE_ID" '{
             "envVars": [
               {
@@ -153,7 +131,6 @@ jobs:
             ]
           }')
 
-          # Make PATCH request to Render API
           curl -X PATCH "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars" \
             -H "Accept: application/json" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
