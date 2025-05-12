@@ -68,20 +68,6 @@ jobs:
 
           echo "image_tag=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Clean up untagged digests
-        run: |
-          # Get Docker Hub JWT Token for authentication
-          TOKEN=$(curl -s -u ${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }} "https://hub.docker.com/v2/users/login/" | jq -r .token)
-  
-          # List all untagged digests in the repo
-          DIGESTS=$(curl -s -H "Authorization: JWT $TOKEN" "https://hub.docker.com/v2/repositories/harithkavish/skinnet-analyzer/tags/?page_size=100" | jq -r '.results[] | select(.tags == null) | .digest')
-  
-          # Delete each untagged digest
-          for digest in $DIGESTS; do
-            echo "Deleting untagged digest: $digest"
-            curl -X DELETE -H "Authorization: JWT $TOKEN" "https://hub.docker.com/v2/repositories/harithkavish/skinnet-analyzer/manifests/$digest"
-          done
-
   build-ml:
     needs: detect-changes
     runs-on: ubuntu-latest
