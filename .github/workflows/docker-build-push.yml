@@ -128,8 +128,9 @@ jobs:
             }'
           )
 
-          echo "Prepared Payload:"
-          echo "$JSON_PAYLOAD"
+          # Pretty print the payload for debugging
+          echo "Prepared Payload (Pretty Printed):"
+          echo "$JSON_PAYLOAD" | jq .
 
           # Validate JSON with jq to catch any errors
           echo "$JSON_PAYLOAD" | jq empty
