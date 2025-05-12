@@ -107,7 +107,7 @@ jobs:
           echo "IMAGE_REPO=harithkavish/skinnet-analyzer" >> $GITHUB_ENV
           echo "IMAGE_TAG=backend-latest" >> $GITHUB_ENV
 
-      - name: Update Render Service with new Image and Env Vars
+      - name: Update Render Service with new Image
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
@@ -126,19 +126,39 @@ jobs:
                     "repository": "'"$IMAGE_REPO"'",
                     "tag": "'"$IMAGE_TAG"'"
                   }
-                },
-                "envVars": [
-                  {
-                    "key": "GEMINI_API_KEY",
-                    "value": "'"$GEMINI_API_KEY"'"
-                  },
-                  {
-                    "key": "ML_API_URL",
-                    "value": "'"$ML_API_URL"'"
-                  }
-                ]
+                }
               }
             }'
+
+      - name: Update Render Environment Variables
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ML_API_URL: ${{ secrets.ML_API_URL }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+        run: |
+          # Prepare JSON body for the PATCH request
+          PAYLOAD=$(jq -n --arg gemini "$GEMINI_API_KEY" --arg mlurl "$ML_API_URL" --arg serviceId "$RENDER_SERVICE_ID" '{
+            "envVars": [
+              {
+                "key": "GEMINI_API_KEY",
+                "value": $gemini,
+                "serviceId": $serviceId
+              },
+              {
+                "key": "ML_API_URL",
+                "value": $mlurl,
+                "serviceId": $serviceId
+              }
+            ]
+          }')
+
+          # Make PATCH request to Render API
+          curl -X PATCH "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars" \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD"
 
       - name: Trigger Render Deploy Hook
         env:
