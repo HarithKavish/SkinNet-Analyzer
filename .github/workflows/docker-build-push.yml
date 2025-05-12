@@ -116,10 +116,14 @@ jobs:
         run: |
           echo "Fetching existing environment variables..."
           EXISTING_VARS=$(curl -s -X GET "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars" \
+            -H "Accept: application/json" \
             -H "Authorization: Bearer ${RENDER_API_KEY}")
 
+          echo "Existing vars:"
+          echo "$EXISTING_VARS"
+
           echo "Merging new environment variables..."
-          UPDATED_VARS=$(echo $EXISTING_VARS | jq \
+          UPDATED_VARS=$(echo "$EXISTING_VARS" | jq \
             --arg gemini "$GEMINI_API_KEY" \
             --arg mlurl "$ML_API_URL" \
             '{
@@ -134,11 +138,16 @@ jobs:
             }'
           )
 
+          echo "Updated payload:"
+          echo "$UPDATED_VARS"
+
           echo "Sending updated environment variables..."
           curl -X PATCH "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars" \
+            -H "Accept: application/json" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
             -d "$UPDATED_VARS"
+
 
       - name: Trigger Render Deploy Hook
         env:
