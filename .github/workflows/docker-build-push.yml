@@ -116,6 +116,7 @@ jobs:
         run: |
           echo "Replacing ALL environment variables at Render..."
 
+          # Build the JSON payload
           JSON_PAYLOAD=$(jq -n \
             --arg gemini "$GEMINI_API_KEY" \
             --arg mlurl "$ML_API_URL" \
@@ -131,14 +132,29 @@ jobs:
           echo "$JSON_PAYLOAD"
 
           echo "Sending PATCH request to Render..."
-          RESPONSE=$(curl -s -X PATCH "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars" \
+
+          # Send the PATCH request, capture HTTP status separately
+          HTTP_RESPONSE=$(curl -s -o response.txt -w "%{http_code}" \
+            -X PATCH "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD")
+            -d "$JSON_PAYLOAD"
+          )
 
-          echo "Render API Response:"
-          echo "$RESPONSE"
+          # Read body
+          BODY=$(cat response.txt)
 
+          echo "HTTP Response Code: $HTTP_RESPONSE"
+          echo "Render API Response Body:"
+          echo "$BODY"
+
+          # Check if PATCH was successful
+          if [[ "$HTTP_RESPONSE" -eq 200 || "$HTTP_RESPONSE" -eq 204 ]]; then
+            echo "✅ Successfully updated environment variables on Render."
+          else
+            echo "❌ Failed to update environment variables on Render. Exiting."
+            exit 1
+          fi
       - name: Trigger Render Deploy Hook
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
