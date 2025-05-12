@@ -118,12 +118,12 @@ jobs:
           curl -X PATCH "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"envVars\": [
-                { \"key\": \"GEMINI_API_KEY\", \"value\": \"${GEMINI_API_KEY}\" },
-                { \"key\": \"ML_API_URL\", \"value\": \"${ML_API_URL}\" }
+            -d '{
+              "envVars": [
+                { "key": "GEMINI_API_KEY", "value": "'"${GEMINI_API_KEY}"'" },
+                { "key": "ML_API_URL", "value": "'"${ML_API_URL}"'" }
               ]
-            }"
+            }'
 
       - name: Trigger Render Deploy Hook
         env:
