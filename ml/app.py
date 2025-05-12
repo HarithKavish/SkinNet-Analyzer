@@ -23,7 +23,6 @@ app = FastAPI()
 
 # Set your local timezone (replace with your desired timezone)
 local_timezone = pytz.timezone("Asia/Kolkata")  # Change to your desired timezone if needed
-
 # Deployment timestamp (frozen once at startup)
 DEPLOYED_AT = datetime.now(local_timezone).strftime("%d-%m-%Y %I:%M %p")
 
