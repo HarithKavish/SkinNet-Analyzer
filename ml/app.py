@@ -70,7 +70,6 @@ async def predict(file: UploadFile = File(...)):
 async def lifespan(app: FastAPI):
     startup_logger.info(f"ML API backend redeployed at {DEPLOYED_AT}")
     yield
-    # Here you could also handle shutdown events if needed
 
 # Assign the lifespan function to FastAPI's lifespan parameter
 app.lifespan = lifespan

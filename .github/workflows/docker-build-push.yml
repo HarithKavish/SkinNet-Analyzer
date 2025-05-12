@@ -41,6 +41,35 @@ jobs:
           echo "ml_changed=$ML_CHANGED" >> $GITHUB_OUTPUT
           echo "frontend_changed=$FRONTEND_CHANGED" >> $GITHUB_OUTPUT
 
+  build-frontend:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.frontend_changed == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Inject Environment Variables
+        run: |
+          echo "REACT_APP_BACKEND_API_URL=${{ secrets.FRONTEND_BACKEND_API_URL }}" > frontend/.env
+
+      - name: Install dependencies
+        run: npm install --prefix frontend
+      
+      - name: Build project
+        run: npm run build --prefix frontend
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build
+
   build-backend:
     needs: detect-changes
     runs-on: ubuntu-latest
@@ -94,6 +123,46 @@ jobs:
           docker push $IMAGE_NAME:$TAG
 
           echo "image_tag=$TAG" >> $GITHUB_OUTPUT
+
+  deploy-frontend:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    if: needs.build-frontend.result == 'success'
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: frontend/build
+          publish_branch: gh-pages
+          force_orphan: true
+          enable_jekyll: false
+
+      - name: Report Frontend Deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.ref,
+              required_contexts: [],
+              environment: 'production-frontend',
+              auto_merge: false
+            });
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: 'success',
+              description: 'Frontend deployed to production-frontend.',
+            });
 
   deploy-render:
     needs: build-backend
@@ -170,6 +239,26 @@ jobs:
           echo "Triggering Render Deploy Hook..."
           curl -X POST "$RENDER_DEPLOY_HOOK_URL"
 
+      - name: Report Backend Deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.ref,
+              required_contexts: [],
+              environment: 'production-backend',
+              auto_merge: false
+            });
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: 'success',
+              description: 'Backend Docker image built and pushed to production-backend.',
+            });
+
   deploy-huggingface:
     needs: build-ml
     runs-on: ubuntu-latest
@@ -193,51 +282,22 @@ jobs:
           git commit -m "Trigger Hugging Face rebuild after Docker image update" || echo "Nothing to commit"
           git push https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/harithkavish/SkinNet-Analyzer HEAD:main
 
-  build-frontend:
-    needs: detect-changes
-    runs-on: ubuntu-latest
-    if: needs.detect-changes.outputs.frontend_changed == 'true'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Report ML Deployment
+        uses: actions/github-script@v7
         with:
-          node-version: 20
-
-      - name: Inject Environment Variables
-        run: |
-          echo "REACT_APP_BACKEND_API_URL=${{ secrets.FRONTEND_BACKEND_API_URL }}" > frontend/.env
-
-      - name: Install dependencies
-        run: npm install --prefix frontend
-      
-      - name: Build project
-        run: npm run build --prefix frontend
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/build
-
-  deploy-frontend:
-    needs: build-frontend
-    runs-on: ubuntu-latest
-    if: needs.build-frontend.result == 'success'
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/build
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: frontend/build
-          publish_branch: gh-pages
-          force_orphan: true
-          enable_jekyll: false
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.ref,
+              required_contexts: [],
+              environment: 'production-ml',
+              auto_merge: false
+            });
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: 'success',
+              description: 'ML model deployed to production-ml.',
+            });
