@@ -116,6 +116,7 @@ jobs:
         run: |
           echo "Updating Render environment variables..."
 
+          # Build the payload using jq
           PAYLOAD=$(jq -n --arg gemini "$GEMINI_API_KEY" --arg mlurl "$ML_API_URL" --arg serviceId "$RENDER_SERVICE_ID" '{
             "envVars": [
               {
@@ -131,6 +132,10 @@ jobs:
             ]
           }')
 
+          # Debugging: Print the payload to verify
+          echo "Payload: $PAYLOAD"
+
+          # Send the payload using curl
           curl -X PATCH "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars" \
             -H "Accept: application/json" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
