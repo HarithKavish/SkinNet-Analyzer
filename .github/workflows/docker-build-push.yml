@@ -171,17 +171,18 @@ jobs:
           curl -X POST https://huggingface.co/api/spaces/harithkavish/SkinNet-Analyzer/restart \
             -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}"
 
-      - name: Set up Git identity
+      - name: Clone Hugging Face Space repository
         run: |
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+          git clone https://huggingface.co/spaces/harithkavish/SkinNet-Analyzer space-repo
+          cd space-repo
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
 
-      - name: Update README.md to trigger Hugging Face rebuild
-        run: |
-          echo "Rebuild: $(date)" >> README.md
+          echo "Rebuild triggered at $(date)" >> README.md
+          
           git add README.md
-          git commit -m "Trigger Hugging Face rebuild after Docker push"
-          git push
+          git commit -m "Trigger Hugging Face rebuild after Docker image update" || echo "Nothing to commit"
+          git push https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/harithkavish/SkinNet-Analyzer HEAD:main
 
   build-frontend:
     needs: detect-changes
