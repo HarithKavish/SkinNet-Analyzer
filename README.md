@@ -85,7 +85,11 @@ fyp_actual_main/
 ## References
 
 - [IJIRT Journal Paper](https://ijirt.org/Article?manuscript=174480)
-- ![Sample Output](https://github.com/user-attachments/assets/c673a823-58a9-444b-bcb8-493a14a104c1)
+
+- Video Preview:
+  <video src="https://github.com/user-attachments/assets/c673a823-58a9-444b-bcb8-493a14a104c1" controls width="600">
+    Your browser does not support the video tag.
+  </video>
 
 ---
 
