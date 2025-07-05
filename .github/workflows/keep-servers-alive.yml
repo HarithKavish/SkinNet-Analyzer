@@ -1,11 +1,8 @@
 name: Keep Services Alive
 
 on:
-  push:
-    branches:
-      - main
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/15 * * * *'  # Adjust ping frequency here
 
 jobs:
   keepalive:
@@ -15,14 +12,43 @@ jobs:
         service: [ml, backend]
 
     steps:
-      - name: Ping ${{ matrix.service }} service
+      - name: Ping and Alert for ${{ matrix.service }}
         run: |
+          echo "==> Starting keepalive for ${{ matrix.service }}"
+
           if [[ "${{ matrix.service }}" == "ml" ]]; then
-            echo "Pinging Hugging Face API..."
-            curl --fail --silent --show-error -H "X-Heartbeat: true" "${{ secrets.ML_API_URL }}" || echo "Ping failed but continuing."
+            TARGET="${{ secrets.ML_API_URL }}"
+            WEBHOOK="${{ secrets.DISCORD_WEBHOOK_ML }}"
           elif [[ "${{ matrix.service }}" == "backend" ]]; then
-            echo "Pinging Backend API..."
-            curl --fail --silent --show-error -H "X-Heartbeat: true" "${{ secrets.FRONTEND_BACKEND_API_URL }}/api/status" || echo "Ping failed but continuing."
+            TARGET="${{ secrets.FRONTEND_BACKEND_API_URL }}/api/status"
+            WEBHOOK="${{ secrets.DISCORD_WEBHOOK_BACKEND }}"
           else
-            echo "Unknown service."
+            echo "❌ Unknown service: ${{ matrix.service }}"
+            exit 1
           fi
+
+          MAX_ATTEMPTS=3
+          SUCCESS=false
+
+          for ((i=1; i<=MAX_ATTEMPTS; i++)); do
+            echo "Ping attempt $i to $TARGET"
+            if curl -A "GitHubKeepAliveBot/1.0" --fail --silent --show-error -H "X-Heartbeat: true" "$TARGET"; then
+              echo "✅ Ping succeeded on attempt $i"
+              SUCCESS=true
+              break
+            else
+              echo "⚠️ Ping failed at $TARGET, attempt $i"
+              sleep $((i * 10))
+            fi
+          done
+
+          if [[ "$SUCCESS" == "false" ]]; then
+            echo "❌ All ping attempts failed. Sending Discord alert..."
+            curl -H "Content-Type: application/json" \
+              -X POST \
+              -d "$(jq -n --arg service "$TARGET" --arg time "$(date -u)" \
+                  '{content: "⚠️ **Ping failed** for `\($service)` at \($time) UTC. All attempts failed."}')" \
+              "$WEBHOOK"
+          fi
+
+          echo "==> Finished ${{ matrix.service }}"
