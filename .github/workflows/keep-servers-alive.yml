@@ -18,10 +18,12 @@ jobs:
 
           if [[ "${{ matrix.service }}" == "ml" ]]; then
             TARGET="${{ secrets.ML_API_URL }}"
-            WEBHOOK="${{ secrets.DISCORD_WEBHOOK_ML }}"
+            FAIL_WEBHOOK="${{ secrets.DISCORD_WEBHOOK_ML }}"
+            SUCCESS_WEBHOOK="${{ secrets.DISCORD_WEBHOOK_ML_SUCCESS }}"
           elif [[ "${{ matrix.service }}" == "backend" ]]; then
             TARGET="${{ secrets.FRONTEND_BACKEND_API_URL }}/api/status"
-            WEBHOOK="${{ secrets.DISCORD_WEBHOOK_BACKEND }}"
+            FAIL_WEBHOOK="${{ secrets.DISCORD_WEBHOOK_BACKEND }}"
+            SUCCESS_WEBHOOK="${{ secrets.DISCORD_WEBHOOK_BACKEND_SUCCESS }}"
           else
             echo "❌ Unknown service: ${{ matrix.service }}"
             exit 1
@@ -42,13 +44,22 @@ jobs:
             fi
           done
 
+          TIMESTAMP="$(date -u)"
+
           if [[ "$SUCCESS" == "false" ]]; then
             echo "❌ All ping attempts failed. Sending Discord alert..."
             curl -H "Content-Type: application/json" \
               -X POST \
-              -d "$(jq -n --arg service "$TARGET" --arg time "$(date -u)" \
+              -d "$(jq -n --arg service "$TARGET" --arg time "$TIMESTAMP" \
                   '{content: "⚠️ **Ping failed** for `\($service)` at \($time) UTC. All attempts failed."}')" \
-              "$WEBHOOK"
+              "$FAIL_WEBHOOK"
+          else
+            echo "✅ Sending success ping to Discord..."
+            curl -H "Content-Type: application/json" \
+              -X POST \
+              -d "$(jq -n --arg service "$TARGET" --arg time "$TIMESTAMP" \
+                  '{content: "✅ **Ping success** for `\($service)` at \($time) UTC."}')" \
+              "$SUCCESS_WEBHOOK"
           fi
 
           echo "==> Finished ${{ matrix.service }}"
