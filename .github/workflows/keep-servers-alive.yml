@@ -2,7 +2,7 @@ name: Keep Services Alive
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Adjust ping frequency here
+    - cron: '*/12 * * * *'  # Adjust ping frequency here
 
 jobs:
   keepalive:
