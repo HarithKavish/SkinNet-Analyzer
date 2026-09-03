@@ -14,6 +14,10 @@ permissions:
   contents: write
   pull-requests: write
   issues: read
+  # Required for claude-code-action's OAuth token exchange. Without this the
+  # step fails after 3 retries with "Could not fetch an OIDC token" and never
+  # reviews anything (confirmed 2026-09-03 on jarvis-github-control PR #2).
+  id-token: write
 
 jobs:
   review:
