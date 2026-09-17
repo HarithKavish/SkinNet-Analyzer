@@ -3,6 +3,7 @@ name: Keep Services Alive
 on:
   schedule:
     - cron: '*/12 * * * *'  # Adjust ping frequency here
+  workflow_dispatch: {}
 
 jobs:
   keepalive:
