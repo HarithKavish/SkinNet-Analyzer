@@ -7,7 +7,7 @@ from typing import Any
 
 from apis.city_coordinates_api import get_city_coordinates
 from apis.nearby_hospitals_api import get_nearby_hospitals
-from apis.gemini_api import gemini
+from apis.nim_api import generate_disease_info
 
 # Centralized logging setup
 handler = RotatingFileHandler("logs/app.log", maxBytes=1_000_000, backupCount=5)
@@ -52,9 +52,9 @@ async def get_disease_info(request: Request):
         print(data.location)
 
         try:
-            ai_response = gemini(query).text
+            ai_response = generate_disease_info(query)
         except Exception as e:
-            logger.exception(f"Gemini API failed: {str(e)}")
+            logger.exception(f"NVIDIA NIM API failed: {str(e)}")
             raise HTTPException(status_code=500, detail="Failed to fetch disease info")
 
         try:

@@ -160,17 +160,17 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           ML_API_URL: ${{ secrets.ML_API_URL }}
         run: |
           echo "Replacing ALL environment variables at Render..."
 
           # Build the JSON payload
           JSON_PAYLOAD=$(jq -n \
-            --arg gemini "$GEMINI_API_KEY" \
+            --arg nvidia "$NVIDIA_API_KEY" \
             --arg mlurl "$ML_API_URL" \
-            '[ 
-              { "key": "GEMINI_API_KEY", "value": $gemini },
+            '[
+              { "key": "NVIDIA_API_KEY", "value": $nvidia },
               { "key": "ML_API_URL", "value": $mlurl }
             ]'
           )
