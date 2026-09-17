@@ -24,7 +24,7 @@ def generate_disease_info(query: str) -> str:
             "max_tokens": 1024,
             "stream": False,
         },
-        timeout=30,
+        timeout=60,  # NIM community endpoints can cold-start a model instance on first call
     )
     response.raise_for_status()
     return response.json()["choices"][0]["message"]["content"]
