@@ -76,3 +76,5 @@ app.lifespan = lifespan
 # To run using: uvicorn ml_backend:app --host 0.0.0.0 --port 7860
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=7860)
+
+# redeploy trigger: 2026-09-17 (Hugging Face Space stuck in RUNTIME_ERROR / scheduling failure)

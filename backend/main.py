@@ -33,3 +33,5 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=port)
 
 # uvicorn main:app --reload
+
+# redeploy trigger: 2026-09-17 (Render service went cold after keepalive workflow was auto-disabled)
