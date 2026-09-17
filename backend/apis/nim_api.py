@@ -10,21 +10,30 @@ MODEL_NAME = "mistralai/mistral-nemotron"  # verified live against NVIDIA's acco
 
 
 def generate_disease_info(query: str) -> str:
-    response = requests.post(
-        NIM_CHAT_URL,
-        headers={
-            "Authorization": f"Bearer {os.getenv('NVIDIA_API_KEY')}",
-            "Accept": "application/json",
-        },
-        json={
-            "model": MODEL_NAME,
-            "messages": [{"role": "user", "content": query}],
-            "temperature": 0.5,
-            "top_p": 1,
-            "max_tokens": 1024,
-            "stream": False,
-        },
-        timeout=60,  # NIM community endpoints can cold-start a model instance on first call
-    )
-    response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
+    # NVIDIA's gateway for this model caps generation around ~30-35s regardless of client
+    # timeout (either hangs then drops, or returns its own 500). max_tokens=600 keeps
+    # generation consistently in the 15-25s range; one retry covers occasional slow calls.
+    last_error = None
+    for attempt in range(2):
+        try:
+            response = requests.post(
+                NIM_CHAT_URL,
+                headers={
+                    "Authorization": f"Bearer {os.getenv('NVIDIA_API_KEY')}",
+                    "Accept": "application/json",
+                },
+                json={
+                    "model": MODEL_NAME,
+                    "messages": [{"role": "user", "content": query}],
+                    "temperature": 0.5,
+                    "top_p": 1,
+                    "max_tokens": 600,
+                    "stream": False,
+                },
+                timeout=45,
+            )
+            response.raise_for_status()
+            return response.json()["choices"][0]["message"]["content"]
+        except requests.exceptions.RequestException as e:
+            last_error = e
+    raise last_error
