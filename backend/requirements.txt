@@ -12,12 +12,11 @@ filelock==3.18.0
 flatbuffers==25.2.10
 fsspec==2025.3.2
 gast==0.6.0
-google-ai-generativelanguage==0.6.15
 google-api-core==2.24.2
 google-api-python-client==2.169.0
 google-auth==2.39.0
 google-auth-httplib2==0.2.0
-google-generativeai==0.8.5
+google-genai==2.24.0
 google-pasta==0.2.0
 googleapis-common-protos==1.70.0
 grpcio==1.71.0

@@ -1,4 +1,4 @@
-import google.generativeai as ai
+from google import genai
 import os
 from dotenv import load_dotenv
 
@@ -6,9 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configure the Gemini API
-ai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = ai.GenerativeModel("gemini-1.5-flash")
-chat = model.start_chat()
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+MODEL_NAME = "gemini-flash-latest"  # tracks Google's current flash model, avoids re-pinning on retirement
 
 def gemini(query):
-    return chat.send_message(query)
+    return client.models.generate_content(model=MODEL_NAME, contents=query)
