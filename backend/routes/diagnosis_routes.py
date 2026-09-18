@@ -1,4 +1,5 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException, Form
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Dict
@@ -23,7 +24,10 @@ async def upload_file(file: UploadFile = File(...)):
     if file.filename == "":
         raise HTTPException(status_code=400, detail="No selected file")
 
-    response = requests.post(ML_API_URL,files={"file": ("image.jpg", await file.read(), file.content_type)})
+    file_bytes = await file.read()
+    response = await run_in_threadpool(
+        requests.post, ML_API_URL, files={"file": ("image.jpg", file_bytes, file.content_type)}
+    )
 
     if response.status_code != 200:
         return JSONResponse(status_code=500, content={"error": "ML API failed"})

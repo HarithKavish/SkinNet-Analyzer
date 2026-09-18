@@ -1,6 +1,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ValidationError
 from typing import Any
@@ -52,16 +53,16 @@ async def get_disease_info(request: Request):
         print(data.location)
 
         try:
-            ai_response = generate_disease_info(query)
+            ai_response = await run_in_threadpool(generate_disease_info, query)
         except Exception as e:
             logger.exception(f"NVIDIA NIM API failed: {str(e)}")
             raise HTTPException(status_code=500, detail="Failed to fetch disease info")
 
         try:
             print(data.location)
-            coords = get_city_coordinates(data.location)
+            coords = await run_in_threadpool(get_city_coordinates, data.location)
             print(coords)
-            hospitals = get_nearby_hospitals(coords)
+            hospitals = await run_in_threadpool(get_nearby_hospitals, coords)
             print(hospitals)
         except Exception:
             logger.exception("Nearby hospital fetch failed.")
