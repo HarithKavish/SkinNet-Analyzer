@@ -48,15 +48,15 @@ SYMPTOM_MAPPING = {
     for disease, symptoms in SYMPTOM_MAPPING.items()
 }
 
-# Store pending symptom checks
-pending_symptom_check = {}  
-
 def confirm_disease_with_symptoms(top_3_predictions):
     """
     Sends symptom questions to the frontend for user input.
+    Returns (questions, disease_keys) - disease_keys must be echoed back by the
+    client in process_user_responses, since this backend runs multiple worker
+    processes with no shared memory between requests.
     """
     disease_keys = [disease for disease, _ in top_3_predictions]
-    
+
     for disease, symptoms in SYMPTOM_MAPPING.items():
         print(disease," : ",symptoms)
 
@@ -69,18 +69,17 @@ def confirm_disease_with_symptoms(top_3_predictions):
     # Convert unique symptoms into a dictionary with questions
     questions = {symptom: f"Do you have {symptom}?" for symptom in unique_symptoms}
 
-    pending_symptom_check["diseases"] = disease_keys  # Store for later confirmation
-    return questions
+    return questions, disease_keys
 
-def process_user_responses(answers):
+def process_user_responses(disease_keys, answers):
     """
     Processes user responses and confirms the most probable disease.
     """
-    symptom_scores = {disease: 0 for disease in pending_symptom_check["diseases"]}
-    
+    symptom_scores = {disease: 0 for disease in disease_keys}
+
     print(answers)
 
-    for disease in pending_symptom_check["diseases"]:
+    for disease in disease_keys:
         if disease in SYMPTOM_MAPPING:
             for symptom in SYMPTOM_MAPPING[disease]:
                 if symptom in answers and answers[symptom] == "1":

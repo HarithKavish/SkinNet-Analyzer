@@ -14,6 +14,7 @@ function Upload() {
   const [result, setResult] = useState("");
   const [backendStatus, setBackendStatus] = useState("Checking Server Status...");
   const [questions, setQuestions] = useState([]); // Stores symptom questions
+  const [diseases, setDiseases] = useState([]); // Candidate diseases returned by /upload
   const [answers, setAnswers] = useState({}); // Stores user responses
   const [awaitingSymptoms, setAwaitingSymptoms] = useState(false); // Waiting for symptom input
   const [finalReport, setFinalReport] = useState(null); // Stores full AI-generated report
@@ -80,6 +81,7 @@ function Upload() {
 
       if (response.data.questions) {
         setQuestions(response.data.questions);
+        setDiseases(response.data.diseases || []);
         setAwaitingSymptoms(true);
         setAnswers({}); // Reset answers
       } else {
@@ -118,7 +120,7 @@ function Upload() {
     setIsSubmitting(true); // Show loading icon
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/confirm_symptoms`, { answers });
+      const response = await axios.post(`${BASE_URL}/api/confirm_symptoms`, { answers, diseases });
       fetchFullDiseaseInfo(response.data.disease, response.data.severity);
     } catch (error) {
       console.error("Error confirming symptoms:", error);
