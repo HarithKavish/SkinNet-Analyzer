@@ -16,6 +16,7 @@ function Upload() {
   const [questions, setQuestions] = useState([]); // Stores symptom questions
   const [diseases, setDiseases] = useState([]); // Candidate diseases returned by /upload
   const [answers, setAnswers] = useState({}); // Stores user responses
+  const [confirmed, setConfirmed] = useState(null); // { disease, severity } from /confirm_symptoms, kept for retry
   const [awaitingSymptoms, setAwaitingSymptoms] = useState(false); // Waiting for symptom input
   const [finalReport, setFinalReport] = useState(null); // Stores full AI-generated report
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -121,16 +122,19 @@ function Upload() {
 
     try {
       const response = await axios.post(`${BASE_URL}/api/confirm_symptoms`, { answers, diseases });
-      fetchFullDiseaseInfo(response.data.disease, response.data.severity);
+      setConfirmed({ disease: response.data.disease, severity: response.data.severity });
+      await fetchFullDiseaseInfo(response.data.disease, response.data.severity);
     } catch (error) {
       console.error("Error confirming symptoms:", error);
       setResult("Error processing symptoms.");
-      setIsSubmitting(false); // Remove loading if error occurs
+    } finally {
+      setIsSubmitting(false); // Always stop the spinner, success or failure
     }
   };
 
 
   const fetchFullDiseaseInfo = async (disease, severity) => {
+    setIsSubmitted(true); // Symptoms were submitted either way; hide "Submit Responses"
     try {
       console.log(`Sending request for Disease: ${disease}, Severity: ${severity}, Location: ${location}`);
 
@@ -139,8 +143,6 @@ function Upload() {
         severity,
         location,
       });
-
-      setIsSubmitted(true); // Hide "Submit Responses" button after clicking
 
       // If severity is "Out of Class", set special message & stop further display
       if (response.data.out_of_class) {
@@ -266,6 +268,17 @@ function Upload() {
             {/* If "Out of Class", display only the message */}
             {finalReport?.outOfClass ? (
               <h2 className="error-message">Disease Out of Class</h2>
+            ) : finalReport?.error ? (
+              <div className="disease-report">
+                <h2 className="error-message">{finalReport.error}</h2>
+                <p>The AI service may be temporarily unavailable. Please try again.</p>
+                <button
+                  className="upload-button"
+                  onClick={() => confirmed && fetchFullDiseaseInfo(confirmed.disease, confirmed.severity)}
+                >
+                  Retry
+                </button>
+              </div>
             ) : finalReport && (
               <div className="disease-report">
                 <h2>Diagnosed Disease</h2>
