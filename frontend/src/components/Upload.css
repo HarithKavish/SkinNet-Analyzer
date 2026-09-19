@@ -373,3 +373,20 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Standalone spinner shown while the report is generated (the button spinner is white) */
+.loading-spinner.dark {
+  border: 3px solid rgba(0, 0, 0, 0.15);
+  border-top-color: #28a745;
+}
+
+.report-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.report-loading p {
+  margin: 0;
+}

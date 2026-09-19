@@ -151,6 +151,17 @@ function Upload() {
   };
 
 
+  const handleRetry = async () => {
+    if (!confirmed) return;
+    setIsSubmitting(true);
+    setFinalReport(null);
+    try {
+      await fetchFullDiseaseInfo(confirmed.disease, confirmed.severity);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const fetchFullDiseaseInfo = async (disease, severity) => {
     setIsSubmitted(true); // Symptoms were submitted either way; hide "Submit Responses"
     try {
@@ -283,6 +294,13 @@ function Upload() {
               </div>
             )}
 
+            {isSubmitting && (
+              <div className="report-loading">
+                <span className="loading-spinner dark"></span>
+                <p>Generating your report... this can take up to a minute.</p>
+              </div>
+            )}
+
             {/* If "Out of Class", display only the message */}
             {finalReport?.outOfClass ? (
               <h2 className="error-message">Disease Out of Class</h2>
@@ -292,7 +310,7 @@ function Upload() {
                 <p>The AI service may be temporarily unavailable. Please try again.</p>
                 <button
                   className="upload-button"
-                  onClick={() => confirmed && fetchFullDiseaseInfo(confirmed.disease, confirmed.severity)}
+                  onClick={handleRetry}
                 >
                   Retry
                 </button>
