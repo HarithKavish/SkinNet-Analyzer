@@ -1,0 +1,187 @@
+{
+ "dataset": {
+  "unique_files": 1129,
+  "near_duplicate_groups": 539,
+  "train_files": 654,
+  "val_files": 239,
+  "test_files": 236,
+  "test_unique_photos": 112,
+  "per_class_groups": {
+   "Cellulitis": 130,
+   "Impetigo": 56,
+   "Athlete-foot": 34,
+   "Nail-fungus": 159,
+   "Ringworm": 55,
+   "Cutaneous-larva-migrans": 49,
+   "Chickenpox": 23,
+   "Shingles": 33
+  }
+ },
+ "seed": 0,
+ "refit_on_train_val": false,
+ "validation_files": {
+  "n": 239,
+  "per_model_top1": {
+   "efficientnet": 0.8619246861924686,
+   "resnet": 0.9163179916317992,
+   "mobilenet": 0.8828451882845189
+  },
+  "ensemble_top1": 0.9288702928870293,
+  "ensemble_top3": 0.9790794979079498,
+  "mean_confidence": 0.7556142210960388,
+  "confidence_correct_p10": 0.5046579241752625,
+  "confidence_wrong_median": 0.49580246210098267,
+  "per_class": {
+   "Cellulitis": {
+    "recall": 0.9705882352941176,
+    "n": 34,
+    "confused_with": "Ringworm"
+   },
+   "Impetigo": {
+    "recall": 0.9,
+    "n": 20,
+    "confused_with": "Cellulitis"
+   },
+   "Athlete-foot": {
+    "recall": 1.0,
+    "n": 36,
+    "confused_with": "-"
+   },
+   "Nail-fungus": {
+    "recall": 1.0,
+    "n": 33,
+    "confused_with": "-"
+   },
+   "Ringworm": {
+    "recall": 0.9583333333333334,
+    "n": 24,
+    "confused_with": "Cellulitis"
+   },
+   "Cutaneous-larva-migrans": {
+    "recall": 0.96,
+    "n": 25,
+    "confused_with": "Shingles"
+   },
+   "Chickenpox": {
+    "recall": 1.0,
+    "n": 35,
+    "confused_with": "-"
+   },
+   "Shingles": {
+    "recall": 0.625,
+    "n": 32,
+    "confused_with": "Ringworm"
+   }
+  }
+ },
+ "test_unique_photos": {
+  "n": 112,
+  "per_model_top1": {
+   "efficientnet": 0.8839285714285714,
+   "resnet": 0.9464285714285714,
+   "mobilenet": 0.8928571428571429
+  },
+  "ensemble_top1": 0.9464285714285714,
+  "ensemble_top3": 0.9821428571428571,
+  "mean_confidence": 0.7873353362083435,
+  "confidence_correct_p10": 0.53945392370224,
+  "confidence_wrong_median": 0.5205504298210144,
+  "per_class": {
+   "Cellulitis": {
+    "recall": 0.9642857142857143,
+    "n": 28,
+    "confused_with": "Athlete-foot"
+   },
+   "Impetigo": {
+    "recall": 1.0,
+    "n": 11,
+    "confused_with": "-"
+   },
+   "Athlete-foot": {
+    "recall": 1.0,
+    "n": 6,
+    "confused_with": "-"
+   },
+   "Nail-fungus": {
+    "recall": 1.0,
+    "n": 32,
+    "confused_with": "-"
+   },
+   "Ringworm": {
+    "recall": 1.0,
+    "n": 10,
+    "confused_with": "-"
+   },
+   "Cutaneous-larva-migrans": {
+    "recall": 0.9166666666666666,
+    "n": 12,
+    "confused_with": "Cellulitis"
+   },
+   "Chickenpox": {
+    "recall": 1.0,
+    "n": 4,
+    "confused_with": "-"
+   },
+   "Shingles": {
+    "recall": 0.5555555555555556,
+    "n": 9,
+    "confused_with": "Ringworm"
+   }
+  }
+ },
+ "test_all_files": {
+  "n": 236,
+  "per_model_top1": {
+   "efficientnet": 0.8347457627118644,
+   "resnet": 0.9067796610169492,
+   "mobilenet": 0.8389830508474576
+  },
+  "ensemble_top1": 0.9110169491525424,
+  "ensemble_top3": 0.9830508474576272,
+  "mean_confidence": 0.7553806900978088,
+  "confidence_correct_p10": 0.4674864113330841,
+  "confidence_wrong_median": 0.4612862169742584,
+  "per_class": {
+   "Cellulitis": {
+    "recall": 0.9714285714285714,
+    "n": 35,
+    "confused_with": "Athlete-foot"
+   },
+   "Impetigo": {
+    "recall": 0.95,
+    "n": 20,
+    "confused_with": "Ringworm"
+   },
+   "Athlete-foot": {
+    "recall": 1.0,
+    "n": 32,
+    "confused_with": "-"
+   },
+   "Nail-fungus": {
+    "recall": 1.0,
+    "n": 33,
+    "confused_with": "-"
+   },
+   "Ringworm": {
+    "recall": 1.0,
+    "n": 23,
+    "confused_with": "-"
+   },
+   "Cutaneous-larva-migrans": {
+    "recall": 0.8333333333333334,
+    "n": 24,
+    "confused_with": "Cellulitis"
+   },
+   "Chickenpox": {
+    "recall": 1.0,
+    "n": 33,
+    "confused_with": "-"
+   },
+   "Shingles": {
+    "recall": 0.5833333333333334,
+    "n": 36,
+    "confused_with": "Cutaneous-larva-migrans"
+   }
+  }
+ }
+}

@@ -37,7 +37,7 @@ async def upload_file(file: UploadFile = File(...)):
     print("Top 3 Predictions:", top_3_predictions)
 
     if detect_unknown_disease(top_3_predictions):
-        return JSONResponse(content={"message": "Unknown disease detected."})
+        return JSONResponse(content={"message": "Could not confidently identify a condition from this image. Please try a clearer, closer photo of the affected area."})
 
     questions, disease_keys = confirm_disease_with_symptoms(top_3_predictions)
     return JSONResponse(content={"questions": questions, "diseases": disease_keys})

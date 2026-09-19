@@ -104,7 +104,7 @@ function Upload() {
         setAwaitingSymptoms(true);
         setAnswers({}); // Reset answers
       } else {
-        setResult(`Disease: ${response.data.disease}, Severity: ${response.data.severity}`);
+        setResult(response.data.message || "Could not identify a condition from this image. Please try a clearer photo.");
       }
     } catch (error) {
       console.error("Error uploading file:", error);
