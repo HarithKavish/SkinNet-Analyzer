@@ -18,6 +18,7 @@ OVERPASS_MIRRORS = [
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ]
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+PHOTON_URL = "https://photon.komoot.io/reverse"
 
 _cache = {}  # (rounded lat, rounded lon) -> (stored_at, hospitals); per worker process
 
@@ -44,6 +45,22 @@ def _from_overpass(url, lat, lon):
             continue
         found.append((element.get("tags", {}).get("name"), float(point["lat"]), float(point["lon"])))
     return found
+
+
+def _from_photon(lat, lon):
+    params = {
+        "lat": lat,
+        "lon": lon,
+        "radius": SEARCH_RADIUS_M // 1000,
+        "limit": MAX_RESULTS,
+        "osm_tag": "amenity:hospital",
+    }
+    response = requests.get(PHOTON_URL, params=params, headers={"User-Agent": USER_AGENT}, timeout=10)
+    response.raise_for_status()
+    return [
+        (f["properties"].get("name"), float(f["geometry"]["coordinates"][1]), float(f["geometry"]["coordinates"][0]))
+        for f in response.json().get("features", [])
+    ]
 
 
 def _from_nominatim(lat, lon):
@@ -73,8 +90,12 @@ def get_nearby_hospitals(coords):
     if cached and time.monotonic() - cached[0] < CACHE_TTL_SECONDS:
         return cached[1]
 
-    # Nominatim is fast (1-2s) and fails instantly when rate-limited; Overpass is slower (~10s)
-    providers = [(NOMINATIM_URL, lambda: _from_nominatim(lat, lon))]
+    # Photon and Nominatim answer in 1-2s (and fail instantly when rate-limited);
+    # Overpass is slower (~10s), so it is the last resort.
+    providers = [
+        (PHOTON_URL, lambda: _from_photon(lat, lon)),
+        (NOMINATIM_URL, lambda: _from_nominatim(lat, lon)),
+    ]
     providers += [(url, lambda u=url: _from_overpass(u, lat, lon)) for url in OVERPASS_MIRRORS]
 
     for name, fetch in providers:
