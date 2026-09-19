@@ -13,6 +13,7 @@ function Upload() {
   const [location, setLocation] = useState(""); // Store user-entered location
   const [result, setResult] = useState("");
   const [backendStatus, setBackendStatus] = useState("Checking Server Status...");
+  const [serverState, setServerState] = useState("checking"); // checking | waking | online | offline
   const [questions, setQuestions] = useState([]); // Stores symptom questions
   const [diseases, setDiseases] = useState([]); // Candidate diseases returned by /upload
   const [answers, setAnswers] = useState({}); // Stores user responses
@@ -31,23 +32,40 @@ function Upload() {
     setTimeout(() => setIsOutputReady(true), 2000); // Adjust based on real output loading time
   }, []);
 
-  const checkBackendStatus = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/api/status`); // or '/status'
-      if (response.status === 200) {
-        setBackendStatus("Server Status: Online ✅");
-      } else {
-        setBackendStatus("Server Status: Unknown ❓");
-      }
-    } catch (error) {
-      console.error("Error connecting to backend:", error);
-      setBackendStatus("Server Status: Offline ❌ . ❗Disclaimer: This is site is for Demo purposes only. Do not use for actual diagnosis❗");
-    }
-  };
-
   useEffect(() => {
-    checkBackendStatus(); // Check backend status on component mount 
-  });
+    let cancelled = false;
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    // Render's free tier sleeps when idle, so the first requests can fail for up to a
+    // minute while it wakes. Keep retrying and say so, instead of showing "Offline".
+    const checkBackendStatus = async () => {
+      for (let attempt = 0; attempt < 12 && !cancelled; attempt++) {
+        try {
+          await axios.get(`${BASE_URL}/api/status`, { timeout: 10000 });
+          if (!cancelled) {
+            setBackendStatus("Server Status: Online ✅");
+            setServerState("online");
+          }
+          return;
+        } catch (error) {
+          if (cancelled) return;
+          console.error("Error connecting to backend:", error);
+          setBackendStatus("Server Status: Waking up the server, this can take up to a minute... ⏳");
+          setServerState("waking");
+          await sleep(3000);
+        }
+      }
+      if (!cancelled) {
+        setBackendStatus("Server Status: Offline ❌ . ❗Disclaimer: This is site is for Demo purposes only. Do not use for actual diagnosis❗");
+        setServerState("offline");
+      }
+    };
+
+    checkBackendStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [BASE_URL]);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -185,8 +203,8 @@ function Upload() {
   return (
     <div ref={outputRef} className="upload-container">
       <p className="backend-status">{backendStatus}</p>
-      {backendStatus === "Checking Server Status..." ? null :
-        backendStatus === "Server Status: Online ✅" ? (
+      {serverState === "checking" || serverState === "waking" ? null :
+        serverState === "online" ? (
           <>
             <div className="title-divv">
               <h3>❗Disclaimer: This website is for Demonstration Purposes only. Don't use for Real Diagnosis❗</h3>

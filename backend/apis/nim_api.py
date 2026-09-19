@@ -9,16 +9,27 @@ load_dotenv()
 NIM_CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 MODEL_NAME = "mistralai/mistral-nemotron"  # verified live against NVIDIA's account-scoped catalogue; many listed NIM models 404
 
+DEADLINE_SECONDS = 35  # total wall-clock budget across attempts; normal answers take 15-25s
+COOLDOWN_SECONDS = 120  # after a full failure, skip NIM briefly so an outage fails instantly
+MAX_ATTEMPTS = 2
+
+# Per-process; each worker tracks its own outage state, which is fine for a fail-fast hint.
+_last_failure_at = None
+
 
 def generate_disease_info(query: str) -> str:
-    # NVIDIA's gateway for this model caps generation around ~30-35s regardless of client
-    # timeout (either hangs then drops, or returns its own 500). max_tokens=600 keeps
-    # generation consistently in the 15-25s range; retries cover transient NVIDIA-side
-    # 500s/timeouts on this community-hosted model.
+    global _last_failure_at
+
+    if _last_failure_at is not None and time.monotonic() - _last_failure_at < COOLDOWN_SECONDS:
+        raise RuntimeError("NVIDIA NIM failed recently; skipping to fallback")
+
+    deadline = time.monotonic() + DEADLINE_SECONDS
     last_error = None
-    for attempt in range(3):
-        if attempt > 0:
-            time.sleep(1.5)
+
+    for attempt in range(MAX_ATTEMPTS):
+        remaining = deadline - time.monotonic()
+        if remaining < 8:
+            break
         try:
             response = requests.post(
                 NIM_CHAT_URL,
@@ -34,10 +45,15 @@ def generate_disease_info(query: str) -> str:
                     "max_tokens": 600,
                     "stream": False,
                 },
-                timeout=45,
+                timeout=remaining,
             )
             response.raise_for_status()
-            return response.json()["choices"][0]["message"]["content"]
+            content = response.json()["choices"][0]["message"]["content"]
+            _last_failure_at = None
+            return content
         except requests.exceptions.RequestException as e:
             last_error = e
-    raise last_error
+            time.sleep(1)
+
+    _last_failure_at = time.monotonic()
+    raise last_error or RuntimeError("NVIDIA NIM request budget exhausted")

@@ -9,6 +9,7 @@ from typing import Any
 from apis.city_coordinates_api import get_city_coordinates
 from apis.nearby_hospitals_api import get_nearby_hospitals
 from apis.nim_api import generate_disease_info
+from services.fallback_info import fallback_disease_info
 
 # Centralized logging setup
 handler = RotatingFileHandler("logs/app.log", maxBytes=1_000_000, backupCount=5)
@@ -55,8 +56,8 @@ async def get_disease_info(request: Request):
         try:
             ai_response = await run_in_threadpool(generate_disease_info, query)
         except Exception as e:
-            logger.exception(f"NVIDIA NIM API failed: {str(e)}")
-            raise HTTPException(status_code=500, detail="Failed to fetch disease info")
+            logger.warning(f"NVIDIA NIM unavailable, using built-in fallback info: {e}")
+            ai_response = fallback_disease_info(data.disease)
 
         try:
             print(data.location)
