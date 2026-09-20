@@ -180,6 +180,18 @@ It writes `efficientnet.pth`, `resnet.pth`, `mobilenet.pth` and `metrics.json` (
 
 All accuracy figures below are on **distinct photos** (a photo and its copies count once). "Unseen" means the model never trained on the photo or any copy of it.
 
+**Reproduce them** with `tools/evaluate.py`, which drives the app's real code (`ml/classify.py`, `backend/services/`) and the same dataset split as `train.py` (default `--seed 0`):
+
+```bash
+# run from the repository root
+python tools/evaluate.py pipeline --data DATA/train DATA/test   # section 2: full pipeline, perfect answers, seen vs unseen
+python tools/evaluate.py noise    --data DATA/train DATA/test   # section 3: wrong symptom answers (about 3 minutes)
+pip install requests
+python tools/evaluate.py live     --data DATA/train DATA/test   # section 4: the deployed website over HTTP (about 6 minutes)
+```
+
+`DATA` is the extracted Kaggle dataset (see [Data](#data)). Sections 2-4 are exactly the output of these commands; section 1 is `ml/models/metrics.json`, written by `train.py`.
+
 ### 1. Image model alone
 
 | | EfficientNet-B0 | ResNet-18 | MobileNetV2 | **Ensemble (live)** |
@@ -217,22 +229,21 @@ Every photo run through the real code (photo → top 3 → questions → answers
 - "Unseen" combines the validation and test photos. On the untouched test photos alone the pipeline scores **97.3%** (109 of 112).
 - "Seen" is a sanity check only; the model trained on those photos.
 - With perfect answers the questions can only re-rank the top 3, so the ceiling is the top-3 recall (98.7% on these 227 photos). The failures are three Shingles photos where Shingles was not among the candidates, plus one correct Impetigo photo dropped by the 0.30 confidence cutoff.
-- The per-disease rows were measured with the earlier Yes-counting scoring rule; the overall perfect-answer result is identical (98.2%) with the shipped rule.
 
 ### 3. Robustness to wrong answers
 
-Real users make mistakes, so answers were corrupted at random and each photo run 100 times per setting (227 unseen photos, the shipped scoring function). Figures are the share of photos where the **disease is chosen correctly**; the photo alone would give 94.7%.
+Real users make mistakes, so answers were corrupted at random and each photo run 100 times per setting (227 unseen photos, the shipped scoring function). Re-running gives figures within a few tenths of a point (random draws). Figures are the share of photos where the **disease is chosen correctly**; the photo alone would give 94.7%.
 
 | Answers wrong | Random flips | Forgetful (says No to symptoms they have) | Over-reporting (says Yes to symptoms they lack) |
 |---|---|---|---|
 | 0% | 98.2% | 98.2% | 98.2% |
-| 10% | 97.9% | 98.2% | 98.2% |
-| 20% | 96.8% | 98.0% | 98.0% |
-| 30% | 94.1% | 97.8% | 97.6% |
-| 50% (random answers) | 80.4% | 97.1% | 96.4% |
+| 10% | 97.9% | 98.2% | 98.1% |
+| 20% | 96.8% | 98.0% | 97.9% |
+| 30% | 93.9% | 97.8% | 97.7% |
+| 50% (random answers) | 80.1% | 97.1% | 96.3% |
 
-- The questions help while random errors stay below roughly 30%. Beyond that a wrong-answering user does worse than the photo alone; forgetting or over-reporting symptoms stays safe even at 50%.
-- Users seeing a correct report (not blocked by "Out of Class") when they forget half their symptoms: 96.2%.
+- The questions help while random errors stay below about 25-30%. Beyond that a wrong-answering user does worse than the photo alone; forgetting or over-reporting symptoms stays safe even at 50%.
+- Users seeing a correct report (not blocked by "Out of Class") when they forget half their symptoms: 96.1%.
 - The answer-reliability setting (0.7) was compared against 0.8 and 0.9 on the same photos and the lowest did best; it was chosen after seeing those results, so the gains are slightly optimistic. Errors were simulated as independent per question; real mistakes are correlated (users are systematically unsure about jargon like "thread/ring like pattern") and were not measured.
 - **Why not just count Yes answers?** An earlier rule that only counted Yes matches and ignored the photo fell below the photo-alone accuracy at about 12% wrong answers (89.4% at 20% random errors, 77.3% at 30%), which is what this rule replaced.
 
@@ -244,7 +255,7 @@ The 112 unseen test photos were sent to the deployed site over HTTP (upload, the
 |---|---|
 | Photo alone, top-1 (1 photo dropped by the confidence cutoff) | 93.8% |
 | With perfect answers | **97.3%** |
-| With ~20% of answers wrong (333 trials) | **95.2%** (about ±1 point) |
+| With ~20% of answers wrong (333 trials) | **96.4%** (an earlier identical run gave 95.2%) |
 | "Out of Class" dead ends under noise | 0 of 333 |
 | Upload errors | 0 |
 
@@ -358,6 +369,7 @@ ml/
   train.py                 dataset grouping, training, honest evaluation
   models/                  efficientnet.pth, resnet.pth, mobilenet.pth, class_indices.pkl,
                            metrics.json, severity_model.pth (untrained, unused)
+tools/evaluate.py          reproduces the README results (pipeline / noise / live modes)
 SkinNet-Analyzer-Test-Images/   18 regression photos (see the testing guide)
 ```
 
@@ -373,7 +385,7 @@ SkinNet-Analyzer-Test-Images/   18 regression photos (see the testing guide)
 - **Care text** depends on NVIDIA NIM availability (its model catalogue is account-specific and it has had multi-day outages); the built-in fallback covers this but is generic.
 - **Hospital search** uses free public services that can rate-limit shared cloud IPs; results are nearest-first but not verified opening hours or specialties.
 - **Cold starts:** Render's free tier sleeps when idle; the first visit after a quiet period can take up to a minute.
-- **Evaluation caveats:** noise experiments simulate independent answer errors; the 0.7 answer-reliability value was picked after seeing results; the live check is 112 photos.
+- **Evaluation caveats:** noise experiments simulate independent answer errors; the 0.7 answer-reliability value was picked after seeing results; the live check is 112 photos and its wrong-answer figure (333 trials) varies by about a point between runs (95.2% and 96.4% in two runs; the server orders the questions differently after each restart, so the same random flips hit different questions).
 
 ---
 
