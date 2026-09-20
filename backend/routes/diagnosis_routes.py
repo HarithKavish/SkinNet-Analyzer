@@ -2,7 +2,7 @@ from fastapi import APIRouter, File, UploadFile, HTTPException, Form
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Dict, List
+from typing import Dict, List, Optional
 import requests
 from dotenv import load_dotenv
 import os
@@ -40,17 +40,22 @@ async def upload_file(file: UploadFile = File(...)):
         return JSONResponse(content={"message": "Could not confidently identify a condition from this image. Please try a clearer, closer photo of the affected area."})
 
     questions, disease_keys = confirm_disease_with_symptoms(top_3_predictions)
-    return JSONResponse(content={"questions": questions, "diseases": disease_keys})
+    return JSONResponse(content={
+        "questions": questions,
+        "diseases": disease_keys,
+        "probabilities": [probability for _, probability in top_3_predictions],
+    })
 
 class SymptomResponse(BaseModel):
     answers: Dict[str, str]  # symptom name -> '1' or '0'
     diseases: List[str]  # candidate diseases returned by /upload
+    probabilities: Optional[List[float]] = None  # the photo's confidence in each, returned by /upload
 
 @router.post("/confirm_symptoms")
 async def confirm_symptoms(data: SymptomResponse):
     print("Received Data:", data)
 
-    confirmed_disease, severity = process_user_responses(data.diseases, data.answers)
+    confirmed_disease, severity = process_user_responses(data.diseases, data.answers, data.probabilities)
 
     print("Confirmed Disease:", confirmed_disease)
     print("Estimated Severity:", severity)

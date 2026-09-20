@@ -16,6 +16,7 @@ function Upload() {
   const [serverState, setServerState] = useState("checking"); // checking | waking | online | offline
   const [questions, setQuestions] = useState([]); // Stores symptom questions
   const [diseases, setDiseases] = useState([]); // Candidate diseases returned by /upload
+  const [probabilities, setProbabilities] = useState([]); // The photo's confidence in each candidate
   const [answers, setAnswers] = useState({}); // Stores user responses
   const [confirmed, setConfirmed] = useState(null); // { disease, severity } from /confirm_symptoms, kept for retry
   const [awaitingSymptoms, setAwaitingSymptoms] = useState(false); // Waiting for symptom input
@@ -101,6 +102,7 @@ function Upload() {
       if (response.data.questions) {
         setQuestions(response.data.questions);
         setDiseases(response.data.diseases || []);
+        setProbabilities(response.data.probabilities || []);
         setAwaitingSymptoms(true);
         setAnswers({}); // Reset answers
       } else {
@@ -139,7 +141,7 @@ function Upload() {
     setIsSubmitting(true); // Show loading icon
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/confirm_symptoms`, { answers, diseases });
+      const response = await axios.post(`${BASE_URL}/api/confirm_symptoms`, { answers, diseases, probabilities });
       setConfirmed({ disease: response.data.disease, severity: response.data.severity });
       await fetchFullDiseaseInfo(response.data.disease, response.data.severity);
     } catch (error) {

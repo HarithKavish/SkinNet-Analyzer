@@ -1,3 +1,5 @@
+import math
+
 
 # Define symptom equivalences
 equivalent_symptoms = {
@@ -71,36 +73,52 @@ def confirm_disease_with_symptoms(top_3_predictions):
 
     return questions, disease_keys
 
-def process_user_responses(disease_keys, answers):
-    """
-    Processes user responses and confirms the most probable disease.
-    """
-    symptom_scores = {disease: 0 for disease in disease_keys}
+# Assumed chance that one Yes/No answer is right. Deliberately low: simulations showed the
+# photo should keep a real vote, so a few wrong answers cannot override a confident photo.
+ANSWER_RELIABILITY = 0.7
+# Below this photo confidence, a disease with almost none of its symptoms confirmed is
+# treated as out of class (no report). A confident photo is never blocked by sparse answers.
+OUT_OF_CLASS_PHOTO_CONFIDENCE = 0.5
 
-    print(answers)
 
-    for disease in disease_keys:
-        if disease in SYMPTOM_MAPPING:
-            for symptom in SYMPTOM_MAPPING[disease]:
-                if symptom in answers and answers[symptom] == "1":
-                    symptom_scores[disease] += 1  # Increase score if symptom matches
-    
-    confirmed_disease = max(symptom_scores, key=symptom_scores.get)
-    confirmed_disease_tot_symptoms = len(SYMPTOM_MAPPING.get(confirmed_disease, []))
-    severity_percentage = symptom_scores[confirmed_disease]/confirmed_disease_tot_symptoms
-    
+def process_user_responses(disease_keys, answers, probabilities=None):
+    """
+    Confirms the most probable disease by combining the photo with the symptom answers.
+
+    Each candidate scores log(photo probability) + how well the answers agree with that
+    disease's symptom list (a Yes for a symptom it has, or a No for one it lacks, counts as
+    agreement). Questions the user did not answer are ignored. `probabilities` are the
+    photo's confidences in the same order as disease_keys; without them the candidates
+    start equal, so only the answers decide.
+    """
+    if not probabilities or len(probabilities) != len(disease_keys):
+        probabilities = [1.0 / len(disease_keys)] * len(disease_keys)
+
+    answered = {symptom: value == "1" for symptom, value in answers.items()}
+    log_right, log_wrong = math.log(ANSWER_RELIABILITY), math.log(1 - ANSWER_RELIABILITY)
+
+    scores = {}
+    for disease, probability in zip(disease_keys, probabilities):
+        symptoms = SYMPTOM_MAPPING.get(disease, [])
+        agree = sum((symptom in symptoms) == yes for symptom, yes in answered.items())
+        scores[disease] = math.log(probability + 1e-9) + agree * log_right + (len(answered) - agree) * log_wrong
+
+    confirmed_disease = max(scores, key=scores.get)  # ties keep the photo's own ranking
+    confirmed_symptoms = SYMPTOM_MAPPING.get(confirmed_disease, [])
+    matched = sum(1 for symptom in confirmed_symptoms if answered.get(symptom))
+    severity_percentage = matched / len(confirmed_symptoms) if confirmed_symptoms else 0.0
+    photo_confidence = probabilities[disease_keys.index(confirmed_disease)]
+
     if severity_percentage < 0.25:
-        severity = "Out of Class"
+        severity = "Out of Class" if photo_confidence < OUT_OF_CLASS_PHOTO_CONFIDENCE else "Mild"
     elif severity_percentage <= 0.50:
         severity = "Mild"
     elif severity_percentage < 0.75:
         severity = "Moderate"
     else:
         severity = "Severe"
-    
-    print("Disease Scores: ", symptom_scores)
-    print("Confirmed Disease Scores: ", symptom_scores[confirmed_disease])
-    print("Confirmed Disease Total Symptoms: ",confirmed_disease_tot_symptoms)
-    print("Confirmed Disease Severity Percentage: ", severity_percentage)
-    print("Confirmed Disease Severity: ", severity)
+
+    print("Disease Scores: ", scores)
+    print("Confirmed Disease:", confirmed_disease, "| photo confidence:", round(photo_confidence, 2),
+          "| symptoms matched:", f"{matched}/{len(confirmed_symptoms)}", "| severity:", severity)
     return confirmed_disease, severity
