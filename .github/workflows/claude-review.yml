@@ -1,19 +1,55 @@
 name: Claude PR Review
 
-# Fires only when a PR is raised, not on every push to it.
+# Fires when a PR is raised AND when new commits are pushed to it (synchronize),
+# so a re-review happens automatically rather than needing a close/reopen.
+#
+# Concurrency below cancels an in-flight review when another push lands, so a
+# burst of commits costs one review of the settled state rather than one per
+# push. A review is roughly a dollar and several minutes, so this matters.
 #
 # IMPORTANT: this event does NOT fire for PRs created with Actions' built-in
 # GITHUB_TOKEN (GitHub suppresses that to prevent workflow recursion). It DOES
 # fire for PRs raised with a PAT or a GitHub App installation token, which is
 # what Jarvis uses. If Jarvis ever moves inside Actions, this silently stops.
+#
+# allowed_bots below is required for the SAME reason, one layer later: the
+# action itself refuses to run when the triggering push came from a bot
+# account, and Jarvis pushes as jarvis-harithkavish[bot]. Without this every
+# agent-pushed commit failed with "Workflow initiated by non-human actor" and
+# posted no review at all -- discovered 2026-09-08 on PR #29, which was
+# manually merged without a passing review as a direct result. Scoped to
+# named bots rather than '*': this is a public repository, and the action's
+# own docs warn that '*' lets any bot invoke it with a prompt that bot
+# controls.
+#
+# 'claude' was added 2026-09-10, found the same way: claude-issue-triage.yml
+# pushes through claude-code-action's own self-minted GitHub App token
+# rather than through the Jarvis App, and that token's pushes are reported
+# as bot "claude", not "jarvis-harithkavish" -- a different identity this
+# list did not yet know about. The failure was identical and identically
+# silent: no comment, no visible error, until the run log was opened
+# directly (PR #53). Same bug class as the original, recurring because a
+# second pipeline introduced a second pushing identity nobody had added.
+#
+# NOTE: the action refuses to run when a PR modifies this file, because the
+# workflow must match the version on the default branch. That is deliberate --
+# it stops a PR from rewriting its own reviewer. Changes here therefore review
+# nothing until they land on the default branch.
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize, ready_for_review]
+
+# One review per pull request at a time; a newer push supersedes an older review.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
   pull-requests: write
-  issues: read
+  # issues: write (not read) since 2026-09-10 -- see the closing-keyword note
+  # on claude_args below. This job now closes issues itself.
+  issues: write
   # Required for claude-code-action's OAuth token exchange. Without this the
   # step fails after 3 retries with "Could not fetch an OIDC token" and never
   # reviews anything (confirmed 2026-09-03 on jarvis-github-control PR #2).
@@ -30,21 +66,50 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          allowed_bots: 'jarvis-harithkavish,claude'
           track_progress: true
-          claude_args: '--allowedTools "Bash(gh pr merge:*)"'
+          # gh issue close added 2026-09-10 -- see the closing-keyword note in the
+          # prompt below. Merges here target development, not this repo's default
+          # branch (main), so GitHub's own Closes/Fixes/Resolves keyword handling
+          # never fires; issue #61 sat open for hours after its own fix merged
+          # because of exactly this, found and filed as issue #65.
+          claude_args: '--allowedTools "Bash(gh pr merge:*),Bash(gh issue close:*)"'
           prompt: |
             Review this pull request for correctness bugs and post your findings
             as a PR comment. Lead with real defects; do not pad with style nits.
 
-            Then decide on merging. Merge ONLY if ALL of these hold:
-              - the change is genuinely low-risk: docs, comments, formatting,
-                tests, or a dependency bump within a minor version
-              - it does NOT touch auth, secrets, migrations, deletions, CI
-                config, network calls, or public API surface
-              - you found no correctness issues
+            This pull request targets: ${{ github.event.pull_request.base.ref }}
 
-            If every condition holds, run:
-              gh pr merge --auto --squash
-            Otherwise leave the PR open and state plainly why you did not merge.
-            When in doubt, do not merge. Leaving a PR open is always safe;
-            merging a bad one is not.
+            Begin your comment with exactly one verdict, alone on its own line:
+
+              VERDICT: PASS   you found no correctness issues
+              VERDICT: FAIL   you found a correctness issue, however small
+              VERDICT: HOLD   it is correct, but it touches credentials,
+                              authentication or secrets -- where a mistake is not
+                              recoverable by reverting -- so Harith decides
+
+            The PR gate reads that line, and nothing merges without PASS, so the
+            verdict is the decision: do not write PASS for something you would not
+            merge. Then explain your findings.
+
+            If, and only if, your verdict is PASS, enable auto-merge -- GitHub then
+            merges once every required check has passed:
+              into development:                      gh pr merge --auto --squash
+              into runway or main (a promotion), or
+              from a branch named sync/*:            gh pr merge --auto --merge
+            Promotions keep every commit, so development, runway and main stay one
+            history; squash-merging a promotion is what diverged them before.
+
+            A promotion is reviewed like any change: its diff is everything it
+            carries. Harith decided on 2026-10-08 that changes flow from feature to
+            development to runway to main without a person in the loop, provided
+            each one passes review and every check.
+
+            A FAIL or a HOLD with clear reasons is a complete and successful review,
+            not a failure to finish. When in doubt, FAIL: a pull request left open
+            is always safe, a merged bad one is not.
+
+            Since 2026-10-08 development is this repository's default branch, so
+            Closes/Fixes/Resolves #N in a pull request body closes the issue when it
+            merges into development -- GitHub does that itself; there is no need to
+            close issues by hand any more.
