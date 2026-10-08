@@ -1,0 +1,182 @@
+name: PR Gate
+
+# The single required check. Nothing merges unless this passes.
+#
+# WHY A SECOND WORKFLOW RATHER THAN REQUIRING `review` DIRECTLY
+#
+# claude-review.yml deliberately refuses to run when a pull request modifies its own
+# file -- that is what stops a pull request rewriting its own reviewer. But a required
+# check that never runs blocks a pull request forever, so requiring `review` directly
+# would make every workflow change unmergeable by any route, including by the owner.
+#
+# So this gate is required instead, and it decides:
+#
+#   ordinary pull request      -> the `review` check must have passed
+#   touches .github/workflows  -> an approving review from the repository owner,
+#                                 because the reviewer cannot police a change to itself
+#
+# The carve-out is narrow and it protects THIS file too: a pull request editing the gate
+# takes the workflow path and needs the owner. CODEOWNERS names /.github/ as the owner's
+# for the same reason.
+#
+# It also makes the old silent failure loud. When the reviewer refused to run on a
+# bot-authored pull request it posted nothing at all and the pull request merged
+# unreviewed (governance issue #90, 54 repositories, about a month). Now that shows up
+# as this gate failing with a reason.
+#
+# Runs from the BASE branch's copy, so a pull request cannot weaken the gate it is
+# judged by. It must therefore exist on a branch BEFORE being made a required check
+# there, or the first pull request has no gate to report.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  # Re-decide when someone reviews: a HOLD verdict, or a workflow change, passes on the
+  # owner's approval, and without this the approval would never be seen.
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  checks: read
+  pull-requests: read
+  contents: read
+
+concurrency:
+  group: pr-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether this pull request may merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          DEFAULT: ${{ github.event.repository.default_branch }}
+          OWNER: ${{ github.repository_owner }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          # Minutes to wait for the reviewer. A review is several minutes of model
+          # work; failing before it lands would make the gate meaningless noise.
+          WAIT_MINUTES: '20'
+        run: |
+          set -uo pipefail
+
+          # A workflow change the reviewer will not judge needs the owner. But a workflow
+          # file that is IDENTICAL to the default branch's was already accepted there --
+          # a promotion carrying development's workflows to runway is the common case --
+          # and the reviewer does run on it, so it goes through the verdict like anything
+          # else. Only workflow files that differ from the default branch count.
+          touches_workflows=0
+          for wf in $(gh api "repos/$REPO/pulls/$PR/files" --paginate \
+                        --jq '.[] | select(.filename | startswith(".github/workflows/")) | .filename'); do
+            at_head=$(gh api "repos/$REPO/contents/$wf?ref=$SHA" --jq .sha 2>/dev/null || true)
+            at_default=$(gh api "repos/$REPO/contents/$wf?ref=$DEFAULT" --jq .sha 2>/dev/null || true)
+            if [ -n "$at_head" ] && [ "$at_head" = "$at_default" ]; then
+              echo "  $wf: identical to $DEFAULT -- already accepted there"
+            else
+              echo "  $wf: differs from $DEFAULT"
+              touches_workflows=$((touches_workflows + 1))
+            fi
+          done
+          echo "workflow files that differ from $DEFAULT: $touches_workflows"
+
+          if [ "${touches_workflows:-0}" -gt 0 ]; then
+            # The reviewer will not judge a change to itself, so this needs the owner's
+            # say-so. Raising it counts as saying so: GitHub forbids approving your own
+            # pull request, so demanding an approval from the author deadlocks the owner
+            # out of ever changing a workflow -- which is what happened on #93.
+            #
+            # This trusts the author field, so it is only as good as the identities being
+            # distinct: an agent that opens pull requests using the owner's token looks
+            # like the owner here. Jarvis has his own installation
+            # (jarvis-harithkavish[bot]) and is expected to use it.
+            if [ "$AUTHOR" = "$OWNER" ]; then
+              echo "✓ workflow change raised by $OWNER -- the owner's own change is the owner's decision."
+              exit 0
+            fi
+            echo "::notice::Raised by $AUTHOR, not $OWNER, and it changes workflow files -- so it needs the owner's approving review."
+            approvals=$(gh api "repos/$REPO/pulls/$PR/reviews" --paginate \
+                          --jq "[.[] | select(.state==\"APPROVED\") | .user.login] | unique | join(\",\")")
+            echo "approvals: [${approvals:-none}]"
+            case ",${approvals}," in
+              *",$OWNER,"*)
+                echo "✓ approved by $OWNER -- a workflow change is allowed on the owner's say-so."
+                exit 0 ;;
+            esac
+            echo "::error::Blocked. A pull request from $AUTHOR touching .github/workflows/ needs an approving review from $OWNER, because the reviewer deliberately will not run on a change to itself. Approve it, or split the workflow change into its own pull request."
+            exit 1
+          fi
+
+          # The head commit's timestamp: a review older than it reviewed older code.
+          pushed_at=$(gh api "repos/$REPO/commits/$SHA" --jq '.commit.committer.date')
+          echo "head commit: $SHA at $pushed_at"
+
+          deadline=$(( $(date +%s) + WAIT_MINUTES * 60 ))
+          while :; do
+            runs=$(gh api "repos/$REPO/commits/$SHA/check-runs?per_page=100" \
+                     --jq '[.check_runs[] | select(.name=="review")]')
+            status=$(printf '%s' "$runs" | jq -r '.[0].status // "absent"')
+            concl=$(printf '%s' "$runs" | jq -r '.[0].conclusion // "none"')
+
+            # A GREEN CHECK IS NOT A REVIEW. When the action refuses -- an unlisted bot,
+            # a workflow it will not judge -- the job still exits 0 and the check turns
+            # green having reviewed nothing. Observed on api#18: success in 11 seconds,
+            # no review posted. So require the reviewer's own evidence, posted after the
+            # commit it is meant to have read.
+            #
+            # AND WHAT IT SAID. Until 2026-10-08 this passed once the reviewer had posted
+            # anything at all -- so a review reporting a defect still passed, and anything
+            # that merges once the gate is green (auto-merge, or Jarvis merging his own work)
+            # would have merged it. The reviewer now opens with a verdict line, and only
+            # PASS passes. HOLD -- correct, but touching credentials or secrets -- passes on
+            # the owner's approval. FAIL, or no verdict, does not.
+            said=$(gh api "repos/$REPO/issues/$PR/comments?per_page=100" \
+                     --jq "[.[] | select(.user.login==\"claude[bot]\") | select(.created_at > \"$pushed_at\") | .body] | last // empty" 2>/dev/null || true)
+            # `|| true`: Actions runs this under bash -e whatever `set` says above, and grep
+            # finding nothing -- no review posted yet -- would kill the gate silently. It
+            # did, on diary#13, on the first pass of this loop.
+            verdict=$(printf '%s\n' "$said" | grep -m1 -oiE '^[^A-Za-z]*VERDICT:[[:space:]]*(PASS|FAIL|HOLD)' \
+                        | grep -oiE 'PASS|FAIL|HOLD' | tr '[:lower:]' '[:upper:]' || true)
+            echo "review check: status=$status conclusion=$concl | verdict on this commit: ${verdict:-none}"
+
+            case "$status:$concl" in
+              completed:success)
+                case "$verdict" in
+                  PASS)
+                    echo "✓ reviewed: PASS."
+                    exit 0 ;;
+                  HOLD)
+                    approvals=$(gh api "repos/$REPO/pulls/$PR/reviews" --paginate \
+                                  --jq "[.[] | select(.state==\"APPROVED\") | .user.login] | unique | join(\",\")" || true)
+                    case ",${approvals}," in
+                      *",$OWNER,"*) echo "✓ held for $OWNER, and $OWNER approved it."; exit 0 ;;
+                    esac
+                    echo "::error::The reviewer found it correct but HELD it for $OWNER: it touches credentials, authentication or secrets. It merges once $OWNER approves."
+                    exit 1 ;;
+                  FAIL)
+                    echo "::error::The reviewer's verdict is FAIL. Address what it found, push, and it reviews again."
+                    exit 1 ;;
+                esac
+                if [ -z "$said" ]; then
+                  echo "::error::The review check is green but the reviewer never posted anything for this commit, which means it did not run -- the silent refusal from issue #90. Most often allowed_bots does not name the author. Fix the workflow in this repository, then push again."
+                else
+                  echo "::error::The reviewer posted, but with no VERDICT line, so there is nothing to pass on. Failing closed."
+                fi
+                exit 1 ;;
+              completed:skipped|completed:neutral)
+                echo "::error::The review check reported '$concl' rather than running. Most often this is the reviewer refusing a bot-authored pull request because allowed_bots does not name it -- the failure that left 54 repositories unreviewed for a month. Fix the workflow, then re-run."
+                exit 1 ;;
+              completed:*)
+                echo "::error::The review did not pass (conclusion: $concl). Address the review, push, and it will re-run."
+                exit 1 ;;
+            esac
+
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::No passing review after ${WAIT_MINUTES} minutes (last seen: status=$status conclusion=$concl). If the reviewer never started, check the workflow run log -- it posts nothing to the pull request when it refuses."
+              exit 1
+            fi
+            sleep 20
+          done
